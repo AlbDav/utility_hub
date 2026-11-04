@@ -2,26 +2,21 @@
  * Logica della Panoramica: scala di colore delle volte provata e conto alla
  * rovescia per la prima. Funzioni pure, senza React.
  */
-
-/** La prima del musical: 8 maggio 2027. */
-export const DATA_PRIMA = new Date(2027, 4, 8);
+import { giorniTra } from '../../lib/dates';
 
 export const LIVELLI = 4;
 
-const MS_GIORNO = 24 * 60 * 60 * 1000;
-
 /** Giorni di calendario da oggi alla prima (0 il giorno stesso, negativo dopo). */
-export function giorniAllaPrima(oggi: Date, prima: Date = DATA_PRIMA): number {
-  const a = Date.UTC(oggi.getFullYear(), oggi.getMonth(), oggi.getDate());
-  const b = Date.UTC(prima.getFullYear(), prima.getMonth(), prima.getDate());
-  return Math.round((b - a) / MS_GIORNO);
+export function giorniAllaPrima(oggi: Date, prima: Date): number {
+  return giorniTra(oggi, prima);
 }
 
-export function testoConto(giorni: number): string {
-  if (giorni > 1) return `Mancano ${giorni} giorni alla prima`;
-  if (giorni === 1) return 'Domani è la prima';
-  if (giorni === 0) return 'Oggi è la prima!';
-  return 'La prima è passata';
+/** Etichetta sotto il numero dei giorni che mancano alla prima. */
+export function etichettaConto(giorni: number): string {
+  if (giorni > 1) return 'giorni alla prima';
+  if (giorni === 1) return 'giorno alla prima';
+  if (giorni === 0) return 'oggi è la prima';
+  return 'la prima è passata';
 }
 
 /** Livello di colore (0…3) delle volte provata, sulla scala dal minimo al massimo attuale. */

@@ -1,20 +1,24 @@
 ---
 import { pwaInfo } from 'virtual:pwa-info';
 import { pwaAssetsHead } from 'virtual:pwa-assets/head';
+import Icon from '../components/Icon.astro';
+import Marchio from '../components/Marchio.astro';
 import '../styles/global.css';
 
 interface Props {
   title: string;
-  /** Mostra il ritorno alla home nell'intestazione. */
-  back?: boolean;
+  /** Riga sotto il titolo. */
+  subtitle?: string;
+  /** La home ha il marchio al posto del ritorno alla home. */
+  home?: boolean;
 }
 
-const { title, back = true } = Astro.props;
-const pageTitle = title === 'Hub' ? 'Hub' : `${title} · Hub`;
+const { title, subtitle, home = false } = Astro.props;
+const pageTitle = home ? 'Cassetta degli attrezzi' : `${title} · Cassetta`;
 ---
 
 <!doctype html>
-<html lang="it">
+<html lang="it" data-theme="officina" class="bg-base-200">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -29,21 +33,48 @@ const pageTitle = title === 'Hub' ? 'Hub' : `${title} · Hub`;
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Hub" />
+    <meta name="apple-mobile-web-app-title" content="Cassetta" />
 
     <script>
       import { registerSW } from 'virtual:pwa-register';
       registerSW({ immediate: true });
     </script>
   </head>
-  <body class="min-h-dvh bg-base-200">
-    <header class="navbar sticky top-0 z-10 bg-base-100 shadow-sm pt-[env(safe-area-inset-top)]">
-      <div class="flex-none">
-        {back && <a href="/" class="btn btn-ghost btn-sm" aria-label="Torna alla home">← Hub</a>}
+  <body class="min-h-dvh bg-base-200 font-sans text-base-content antialiased">
+    <header class="border-b-2 border-base-content pt-[env(safe-area-inset-top)]">
+      <div class="mx-auto flex max-w-3xl flex-col gap-4 px-5 pt-5 pb-5">
+        {
+          home ? (
+            <>
+              <div class="flex items-center gap-3">
+                <Marchio size={44} />
+                <div class="flex flex-col gap-[3px]">
+                  <span class="display text-xl leading-none">Cassetta</span>
+                  <span class="font-mono text-[10px] tracking-[0.22em] uppercase">degli attrezzi</span>
+                </div>
+              </div>
+              <h1 class="display mt-3 text-[2rem]">{title}</h1>
+            </>
+          ) : (
+            <>
+              <a
+                href="/"
+                class="inline-flex min-h-11 items-center gap-1.5 self-start font-mono text-[13px] font-medium tracking-[0.06em] uppercase"
+              >
+                <Icon name="indietro" strokeWidth={2.5} />
+                Cassetta
+              </a>
+              <div class="flex flex-col gap-1.5">
+                <h1 class="display text-[2.125rem]">{title}</h1>
+                {subtitle && <p class="text-[15px] text-neutral">{subtitle}</p>}
+              </div>
+            </>
+          )
+        }
+        <slot name="header" />
       </div>
-      <h1 class="flex-1 px-2 text-lg font-semibold">{title}</h1>
     </header>
-    <main class="mx-auto max-w-3xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+    <main class="mx-auto max-w-3xl px-5 pt-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
       <slot />
     </main>
   </body>

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { DataStatus } from '../../components/DataStatus';
 import { usePersistentState } from '../../lib/usePersistentState';
 import { useSheets } from '../../lib/useSheets';
@@ -9,40 +9,27 @@ import { PanoramicaView } from './PanoramicaView';
 import { ProvaView } from './ProvaView';
 import { SchedaScena } from './SchedaScena';
 import { useSchedaAperta } from './useSchedaAperta';
-
-type Vista = 'prova' | 'panoramica';
+import { setVista, useVista } from './vista';
 
 export default function Planner() {
   const { tables, status, refresh } = useSheets(storageKey, sheetUrls);
   const data = useMemo(() => (tables ? buildMusicalData(tables) : null), [tables]);
   const [stato, setStato] = usePersistentState(STATO_KEY, STATO_INIZIALE, parseStatoProva);
-  const [vista, setVista] = useState<Vista>('prova');
+  const vista = useVista();
 
   const scheda = useSchedaAperta();
   const presenti = useMemo(() => new Set(stato.presenti), [stato.presenti]);
   const scenaAperta = data?.scene.find((s) => s.numero === scheda.numero);
 
   return (
-    <div className="space-y-4">
-      <DataStatus status={status} onRefresh={refresh} warnings={data?.avvisi} fixtures={useFixtures} />
-
-      <div role="tablist" className="tabs tabs-box">
-        {(['prova', 'panoramica'] as const).map((v) => (
-          <button
-            key={v}
-            type="button"
-            role="tab"
-            aria-selected={vista === v}
-            className={`tab flex-1 ${vista === v ? 'tab-active' : ''}`}
-            onClick={() => setVista(v)}
-          >
-            {v === 'prova' ? 'Prova' : 'Panoramica'}
-          </button>
-        ))}
-      </div>
-
+    <div className="flex flex-col gap-7">
       {data && vista === 'prova' && <ProvaView data={data} stato={stato} onStato={setStato} onApriScena={scheda.apri} />}
-      {data && vista === 'panoramica' && <PanoramicaView data={data} onApriScena={scheda.apri} />}
+      {data && vista === 'scene' && <PanoramicaView data={data} onApriScena={scheda.apri} />}
+
+      <div className="flex flex-col gap-2">
+        <DataStatus status={status} onRefresh={refresh} warnings={data?.avvisi} fixtures={useFixtures} />
+        {vista === 'prova' && <p className="px-1 text-sm text-neutral">Le prove si segnano nel foglio.</p>}
+      </div>
 
       {data && scenaAperta && (
         <SchedaScena
@@ -51,6 +38,10 @@ export default function Planner() {
           scena={scenaAperta}
           presenti={presenti}
           onChiudi={scheda.chiudi}
+          onTutteLeScene={() => {
+            scheda.chiudi();
+            setVista('scene');
+          }}
         />
       )}
     </div>

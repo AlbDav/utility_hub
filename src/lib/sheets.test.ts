@@ -135,10 +135,10 @@ describe('describeStatus', () => {
   const at = new Date(2026, 10, 4, 21, 30);
 
   it('descrive dati aggiornati e copia offline', () => {
-    expect(describeStatus({ kind: 'fresh', fetchedAt: at })).toBe('Aggiornato alle 21:30');
-    expect(describeStatus({ kind: 'stale', fetchedAt: at, offline: true })).toBe('Offline: dati del 4/11 alle 21:30');
+    expect(describeStatus({ kind: 'fresh', fetchedAt: at })).toBe('Aggiornato dal foglio · alle 21:30');
+    expect(describeStatus({ kind: 'stale', fetchedAt: at, offline: true })).toBe('Offline · dati del 4 nov, 21:30');
     expect(describeStatus({ kind: 'stale', fetchedAt: at, offline: false })).toBe(
-      'Download non riuscito: dati del 4/11 alle 21:30',
+      'Download non riuscito · dati del 4 nov, 21:30',
     );
   });
 

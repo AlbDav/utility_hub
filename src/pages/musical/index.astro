@@ -1,13 +1,17 @@
 ---
 import Layout from '../../layouts/Layout.astro';
 import Planner from '../../utilities/musical/Planner';
+import VistaTabs from '../../utilities/musical/VistaTabs';
 import { trovaUtility } from '../../utilities';
 
 const utility = trovaUtility('musical');
 ---
 
-<Layout title={utility.nome}>
+<Layout title={utility.nome} subtitle={utility.sottotitolo}>
+  <VistaTabs slot="header" client:only="react">
+    <div slot="fallback" class="min-h-12 rounded-[10px] border-2 border-base-content"></div>
+  </VistaTabs>
   <Planner client:only="react">
-    <p slot="fallback" class="opacity-70">Caricamento…</p>
+    <p slot="fallback" class="text-neutral">Caricamento…</p>
   </Planner>
 </Layout>

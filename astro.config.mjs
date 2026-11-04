@@ -4,7 +4,7 @@ import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
 import { AstroPWAIntegration } from '@vite-pwa/astro';
 
-const THEME_COLOR = '#4f46e5';
+const THEME_COLOR = '#F4EFE6';
 
 export default defineConfig({
   output: 'static',
@@ -18,20 +18,21 @@ export default defineConfig({
       injectRegister: false,
       pwaAssets: { config: true, overrideManifestIcons: true },
       manifest: {
-        name: 'Hub',
-        short_name: 'Hub',
+        name: 'Cassetta degli attrezzi',
+        short_name: 'Cassetta',
         description: 'Le utility personali di Davide',
         lang: 'it',
         display: 'standalone',
         start_url: '/',
         scope: '/',
         theme_color: THEME_COLOR,
-        background_color: '#ffffff',
+        background_color: THEME_COLOR,
       },
       generateSW: {
         // Solo pagine e asset dell'hub. I CSV dei Fogli Google non vanno in
         // cache qui: la copia salvata la gestisce l'app, che ne conosce l'ora.
-        globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+        // Dei font solo i sottoinsiemi latini: bastano per l'italiano.
+        globPatterns: ['**/*.{js,css,html,svg,png,ico}', '**/*-latin-*.woff2'],
         navigateFallback: '/',
         cleanupOutdatedCaches: true,
       },

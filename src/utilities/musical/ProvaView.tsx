@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
+import { Icon } from '../../components/Icon';
+import { BadgeSostituti } from './BadgeSostituti';
 import type { MusicalData } from './data';
-import { percentualePresenti, sceneDaProvare, type Filtri, type Filtro, type StatScena } from './logic';
+import { percentualePresenti, sceneDaProvare, sezioniPresenze, type Filtri, type Filtro, type StatScena } from './logic';
 import { STATO_INIZIALE, type StatoProva } from './presenze';
 
 interface Props {
@@ -16,11 +18,14 @@ const ETICHETTE_FILTRO: Record<keyof Filtri, string> = {
   coreografia: 'Coreografia',
 };
 
-const OPZIONI_FILTRO: { valore: Filtro; etichetta: string }[] = [
-  { valore: 'tutte', etichetta: 'Indifferente' },
-  { valore: 'con', etichetta: 'Solo con' },
-  { valore: 'senza', etichetta: 'Senza' },
-];
+/** Ogni tocco passa allo stato successivo: indifferente → solo con → senza → indifferente. */
+const PROSSIMO: Record<Filtro, Filtro> = { tutte: 'con', con: 'senza', senza: 'tutte' };
+
+const DESCRIZIONE_FILTRO: Record<Filtro, string> = {
+  tutte: 'indifferente',
+  con: 'solo le scene con',
+  senza: 'solo le scene senza',
+};
 
 export function ProvaView({ data, stato, onStato, onApriScena }: Props) {
   // Si ignorano le spunte di personaggi che non sono più nel foglio.
@@ -28,6 +33,7 @@ export function ProvaView({ data, stato, onStato, onApriScena }: Props) {
     () => new Set(stato.presenti.filter((p) => data.personaggi.includes(p))),
     [stato.presenti, data.personaggi],
   );
+  const sezioni = useMemo(() => sezioniPresenze(data), [data]);
   const scene = useMemo(() => sceneDaProvare(data, presenti, stato.filtri), [data, presenti, stato.filtri]);
   const filtriAttivi = Object.values(stato.filtri).filter((f) => f !== 'tutte').length;
   // Aperta all'inizio solo se non c'è ancora nessuna spunta.
@@ -41,24 +47,19 @@ export function ProvaView({ data, stato, onStato, onApriScena }: Props) {
   };
 
   return (
-    <div className="space-y-4">
-      <details
-        className="collapse collapse-arrow bg-base-100 shadow-sm"
-        open={aperta}
-        onToggle={(e) => setAperta(e.currentTarget.open)}
-      >
-        <summary className="collapse-title flex items-center gap-2 pr-12 font-medium">
-          <span className="flex-1">
-            Presenti: {presenti.size}/{data.personaggi.length}
-            {filtriAttivi > 0 && (
-              <span className="badge badge-primary badge-sm ml-2">
-                {filtriAttivi === 1 ? '1 filtro' : `${filtriAttivi} filtri`}
-              </span>
-            )}
+    <div className="flex flex-col gap-7">
+      <details className="riquadro group" open={aperta} onToggle={(e) => setAperta(e.currentTarget.open)}>
+        <summary className="flex cursor-pointer list-none items-center gap-3 p-[18px] [&::-webkit-details-marker]:hidden">
+          <span className="flex flex-1 flex-col gap-0.5">
+            <h2 className="font-display text-[22px] leading-tight font-bold">Chi c’è</h2>
+            <span className="font-mono text-xs font-medium tracking-[0.06em] text-neutral uppercase">
+              {presenti.size} presenti su {data.personaggi.length}
+              {filtriAttivi > 0 && ` · ${filtriAttivi === 1 ? '1 filtro' : `${filtriAttivi} filtri`}`}
+            </span>
           </span>
           <button
             type="button"
-            className="btn btn-ghost btn-xs"
+            className="ombra min-h-11 rounded-field border-2 border-base-content bg-base-100 px-3.5 text-[15px] font-semibold disabled:opacity-40 disabled:shadow-none"
             disabled={presenti.size === 0 && filtriAttivi === 0}
             onClick={(e) => {
               e.preventDefault();
@@ -67,88 +68,126 @@ export function ProvaView({ data, stato, onStato, onApriScena }: Props) {
           >
             Azzera
           </button>
+          <Icon name="avanti" strokeWidth={2.5} className="flex-none rotate-90 transition group-open:-rotate-90" />
         </summary>
-        <div className="collapse-content space-y-4">
-          <fieldset>
-            <legend className="mb-2 text-sm opacity-70">Spunta chi c’è alla prossima prova</legend>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
-              {data.personaggi.map((nome) => (
-                <label key={nome} className="label cursor-pointer justify-start gap-2 py-1 text-base-content">
-                  <input
-                    type="checkbox"
-                    className="checkbox checkbox-sm checkbox-primary"
-                    checked={presenti.has(nome)}
-                    onChange={() => togglePresente(nome)}
-                  />
-                  <span>{nome}</span>
-                </label>
+
+        <div className="flex flex-col gap-4 px-[18px] pb-[18px]">
+          {sezioni.map((sezione) => (
+            <fieldset key={sezione.nome} className="flex flex-col gap-2">
+              <legend className="etichetta mb-2">{sezione.nome}</legend>
+              <div className="flex flex-wrap gap-2">
+                {sezione.persone.map((nome) => {
+                  const on = presenti.has(nome);
+                  return (
+                    <button
+                      key={nome}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => togglePresente(nome)}
+                      className={`inline-flex min-h-11 items-center gap-2 rounded-full border-2 text-[15px] ${
+                        on
+                          ? 'border-base-content bg-base-content pr-4 pl-3 font-semibold text-base-200'
+                          : 'border-base-300 bg-base-100 px-4 font-medium'
+                      }`}
+                    >
+                      {on && <Icon name="spunta" size={16} strokeWidth={3} className="text-accent" />}
+                      {nome}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+          ))}
+
+          <div className="flex flex-col gap-2 border-t-2 border-base-300 pt-4">
+            <span className="etichetta">Filtri</span>
+            <div className="flex flex-wrap gap-x-5 gap-y-1">
+              {(Object.keys(ETICHETTE_FILTRO) as (keyof Filtri)[]).map((chiave) => (
+                <CasellaFiltro
+                  key={chiave}
+                  etichetta={ETICHETTE_FILTRO[chiave]}
+                  valore={stato.filtri[chiave]}
+                  onCambia={() => onStato({ ...stato, filtri: { ...stato.filtri, [chiave]: PROSSIMO[stato.filtri[chiave]] } })}
+                />
               ))}
             </div>
-          </fieldset>
-
-          <div className="space-y-2">
-            {(Object.keys(ETICHETTE_FILTRO) as (keyof Filtri)[]).map((chiave) => (
-              <div key={chiave} className="flex flex-wrap items-center gap-2">
-                <span className="w-24 text-sm">{ETICHETTE_FILTRO[chiave]}</span>
-                <div className="join" role="radiogroup" aria-label={ETICHETTE_FILTRO[chiave]}>
-                  {OPZIONI_FILTRO.map((o) => (
-                    <button
-                      key={o.valore}
-                      type="button"
-                      role="radio"
-                      aria-checked={stato.filtri[chiave] === o.valore}
-                      className={`btn join-item btn-xs ${stato.filtri[chiave] === o.valore ? 'btn-primary' : ''}`}
-                      onClick={() => onStato({ ...stato, filtri: { ...stato.filtri, [chiave]: o.valore } })}
-                    >
-                      {o.etichetta}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
+            <p className="text-sm text-neutral">✓ solo le scene con · ✕ solo le scene senza · vuota indifferente</p>
           </div>
         </div>
       </details>
 
-      {scene.length === 0 ? (
-        <p className="text-center text-sm opacity-70">Nessuna scena con questi filtri.</p>
-      ) : (
-        <ul className="space-y-2">
-          {scene.map((s) => (
-            <li key={s.scena.numero}>
-              <RigaScena stat={s} onApri={() => onApriScena(s.scena.numero)} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <section className="flex flex-col gap-3">
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-display text-[22px] leading-tight font-bold">Scene da provare</h2>
+          <span className="font-mono text-xs text-neutral">in quest’ordine</span>
+        </div>
+        {scene.length === 0 ? (
+          <p className="text-center text-sm text-neutral">Nessuna scena con questi filtri.</p>
+        ) : (
+          <ol className="flex flex-col gap-3">
+            {scene.map((s, i) => (
+              <li key={s.scena.numero}>
+                <RigaScena stat={s} posizione={i + 1} onApri={() => onApriScena(s.scena.numero)} />
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
     </div>
   );
 }
 
-function RigaScena({ stat, onApri }: { stat: StatScena; onApri: () => void }) {
-  const completa = stat.sostituti === 0 && stat.gente.length > 0;
+/** Casella a tre stati: vuota (indifferente), spunta (solo con), croce (senza). */
+function CasellaFiltro({ etichetta, valore, onCambia }: { etichetta: string; valore: Filtro; onCambia: () => void }) {
   return (
     <button
       type="button"
-      onClick={onApri}
-      className={`card card-sm w-full text-left shadow-sm ${completa ? 'bg-success/15 ring-1 ring-success' : 'bg-base-100'}`}
+      onClick={onCambia}
+      aria-label={`${etichetta}: ${DESCRIZIONE_FILTRO[valore]}`}
+      className="inline-flex min-h-11 items-center gap-2.5 text-[15px] font-medium"
     >
-      <div className="card-body gap-1">
-        <div className="flex items-start gap-2">
-          <span className="font-semibold tabular-nums">{stat.scena.numero}</span>
-          <span className="flex-1 font-medium">{stat.scena.titolo || '—'}</span>
-          <span className={`badge badge-sm ${completa ? 'badge-success' : stat.sostituti > 0 ? 'badge-warning' : 'badge-ghost'}`}>
-            {completa ? 'al completo' : stat.sostituti === 1 ? '1 sostituto' : `${stat.sostituti} sostituti`}
+      <span
+        aria-hidden="true"
+        className={`flex size-6 flex-none items-center justify-center rounded-md border-2 ${
+          valore === 'con'
+            ? 'border-base-content bg-base-content text-accent'
+            : valore === 'senza'
+              ? 'border-primary bg-primary text-primary-content'
+              : 'border-base-content bg-base-100'
+        }`}
+      >
+        {valore === 'con' && <Icon name="spunta" size={16} strokeWidth={3} />}
+        {valore === 'senza' && <Icon name="croce" size={14} strokeWidth={3} />}
+      </span>
+      <span className={valore === 'senza' ? 'line-through decoration-2' : ''}>{etichetta}</span>
+    </button>
+  );
+}
+
+function RigaScena({ stat, posizione, onApri }: { stat: StatScena; posizione: number; onApri: () => void }) {
+  return (
+    <button type="button" onClick={onApri} className="riquadro grid w-full grid-cols-[36px_1fr] gap-3 p-3.5 text-left">
+      <span className="display text-[22px] leading-none">{posizione}</span>
+      <span className="flex min-w-0 flex-col gap-1.5">
+        <span className="flex items-start justify-between gap-2.5">
+          <span className="flex min-w-0 flex-col gap-0.5">
+            <span className="etichetta">Scena {stat.scena.numero}</span>
+            <strong className="text-[17px] leading-snug">{stat.scena.titolo || '—'}</strong>
           </span>
-        </div>
-        <div className="text-xs opacity-70">
-          {stat.gente.length === 0
-            ? 'nessuno in scena'
-            : `${stat.presenti}/${stat.gente.length} presenti (${percentualePresenti(stat)}%)`}{' '}
-          · provata {stat.volteProvata === 1 ? '1 volta' : `${stat.volteProvata} volte`}
-        </div>
-        {stat.mancanti.length > 0 && <div className="text-xs">Mancano: {stat.mancanti.join(', ')}</div>}
-      </div>
+          <BadgeSostituti stat={stat} />
+        </span>
+        {stat.gente.length > 0 && (
+          <span className="text-sm leading-snug text-neutral">
+            {stat.mancanti.length === 0 ? 'Ci sono tutti' : `Mancano: ${stat.mancanti.join(', ')}`}
+          </span>
+        )}
+        <span className="font-mono text-xs text-neutral">
+          {stat.gente.length > 0 && `${stat.presenti}/${stat.gente.length} presenti (${percentualePresenti(stat)}%) · `}
+          {stat.volteProvata === 0
+            ? 'mai provata'
+            : `provata ${stat.volteProvata} ${stat.volteProvata === 1 ? 'volta' : 'volte'}`}
+        </span>
+      </span>
     </button>
   );
 }

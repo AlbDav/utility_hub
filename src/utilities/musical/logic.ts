@@ -117,3 +117,25 @@ export function parseHashScena(hash: string): number | null {
   const match = /^#scena-(\d+)$/.exec(hash);
   return match ? Number(match[1]) : null;
 }
+
+export interface SezionePresenze {
+  nome: string;
+  persone: string[];
+}
+
+/**
+ * Personaggi divisi per le caselle delle presenze: prima quelli senza gruppo,
+ * poi un blocco per gruppo. Chi sta in più gruppi compare solo nel primo.
+ */
+export function sezioniPresenze(data: MusicalData): SezionePresenze[] {
+  const mostrati = new Set<string>();
+  const inGruppo = new Set(data.gruppi.flatMap((g) => g.membri));
+  const sezioni: SezionePresenze[] = [{ nome: 'Personaggi', persone: data.personaggi.filter((p) => !inGruppo.has(p)) }];
+  sezioni[0].persone.forEach((p) => mostrati.add(p));
+  for (const g of data.gruppi) {
+    const persone = data.personaggi.filter((p) => g.membri.includes(p) && !mostrati.has(p));
+    persone.forEach((p) => mostrati.add(p));
+    sezioni.push({ nome: g.nome, persone });
+  }
+  return sezioni.filter((s) => s.persone.length > 0);
+}

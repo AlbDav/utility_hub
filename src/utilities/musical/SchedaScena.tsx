@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { formatDate } from '../../lib/sheets';
+import { Icon } from '../../components/Icon';
+import type { IconName } from '../../lib/icons';
+import { giornoMese } from '../../lib/dates';
+import { BadgeSostituti } from './BadgeSostituti';
 import type { MusicalData, Scene } from './data';
 import { statScena } from './logic';
 
@@ -8,12 +11,17 @@ interface Props {
   scena: Scene;
   presenti: ReadonlySet<string>;
   onChiudi: () => void;
+  onTutteLeScene: () => void;
 }
 
-const siNo = (v: boolean) => (v ? 'sì' : 'no');
+const CARATTERISTICHE: { chiave: 'canzone' | 'coreografia' | 'coro'; nome: string; icona: IconName }[] = [
+  { chiave: 'canzone', nome: 'canzone', icona: 'canzone' },
+  { chiave: 'coreografia', nome: 'coreografia', icona: 'coreografia' },
+  { chiave: 'coro', nome: 'coro', icona: 'gruppo' },
+];
 
-/** Scheda di una scena, aperta sopra la vista da cui si arriva. */
-export function SchedaScena({ data, scena, presenti, onChiudi }: Props) {
+/** Scheda di una scena, aperta sopra la vista da cui si arriva: a tutto schermo sul telefono. */
+export function SchedaScena({ data, scena, presenti, onChiudi, onTutteLeScene }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
   const stat = statScena(data, scena, presenti);
   const cast = data.cast[scena.numero] ?? { personaggi: [], gruppi: [] };
@@ -27,7 +35,7 @@ export function SchedaScena({ data, scena, presenti, onChiudi }: Props) {
   return (
     <dialog
       ref={dialog}
-      className="modal modal-bottom sm:modal-middle"
+      className="modal"
       aria-labelledby="scheda-titolo"
       // Esc chiude il dialog: lo si fa passare dalla cronologia come il pulsante.
       onCancel={(e) => {
@@ -35,68 +43,136 @@ export function SchedaScena({ data, scena, presenti, onChiudi }: Props) {
         onChiudi();
       }}
     >
-      <div className="modal-box max-h-[85dvh] space-y-4 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
-        <div className="flex items-start gap-2">
-          <h2 id="scheda-titolo" className="flex-1 text-lg font-semibold">
-            Scena {scena.numero}
-            {scena.titolo && <span className="block font-normal">{scena.titolo}</span>}
-          </h2>
-          <button type="button" className="btn btn-circle btn-ghost btn-sm" onClick={onChiudi} aria-label="Chiudi">
-            ✕
+      <div className="modal-box flex h-dvh max-h-none w-full max-w-none flex-col overflow-y-auto rounded-none bg-base-200 p-0 sm:h-auto sm:max-h-[90dvh] sm:max-w-lg sm:rounded-box sm:border-2 sm:border-base-content">
+        <header className="flex flex-col gap-[18px] bg-base-content px-5 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-6 text-base-200">
+          <button
+            type="button"
+            onClick={onChiudi}
+            className="inline-flex min-h-11 items-center gap-1.5 self-start font-mono text-[13px] font-medium tracking-[0.06em] uppercase"
+          >
+            <Icon name="indietro" strokeWidth={2.5} />
+            Indietro
+          </button>
+          <div className="flex items-end gap-4">
+            <span className="display text-[88px] leading-[0.8] font-black text-accent">{scena.numero}</span>
+            <div className="flex flex-col gap-1.5 pb-1">
+              <span className="font-mono text-xs font-medium tracking-[0.08em] text-base-300 uppercase">Scena</span>
+              <h2 id="scheda-titolo" className="font-display text-[26px] leading-tight font-bold">
+                {scena.titolo || `Scena ${scena.numero}`}
+              </h2>
+            </div>
+          </div>
+          <ul className="flex flex-wrap gap-2" aria-label="Caratteristiche">
+            {CARATTERISTICHE.map(({ chiave, nome, icona }) =>
+              scena[chiave] ? (
+                <li key={chiave} className={`${CHIP} bg-base-200 text-base-content`}>
+                  <Icon name={icona} size={16} />
+                  <span className="first-letter:uppercase">{nome}</span>
+                </li>
+              ) : (
+                <li key={chiave} className={`${CHIP} border-2 border-neutral text-base-300 line-through decoration-2`}>
+                  <span>senza {nome}</span>
+                </li>
+              ),
+            )}
+            {scena.pagina && (
+              <li className={`${CHIP} border-2 border-neutral`}>
+                <Icon name="pagina" size={16} />
+                Pag. {scena.pagina}
+              </li>
+            )}
+          </ul>
+        </header>
+
+        <div className="flex flex-col gap-5 p-5 pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          <section className="riquadro grid grid-cols-2 overflow-hidden">
+            <div className="flex flex-col gap-1.5 p-4">
+              <span className="display text-4xl leading-[0.9]">{stat.volteProvata}</span>
+              <span className="etichetta">{stat.volteProvata === 1 ? 'volta provata' : 'volte provata'}</span>
+            </div>
+            <div className="flex flex-col gap-1.5 border-l-2 border-base-content p-4">
+              <span className="font-display text-[26px] leading-tight font-extrabold">
+                {stat.ultimaProva ? giornoMese(stat.ultimaProva) : stat.volteProvata > 0 ? '—' : 'mai'}
+              </span>
+              <span className="etichetta">
+                {stat.ultimaProva || stat.volteProvata === 0 ? 'ultima prova' : 'data non leggibile'}
+              </span>
+            </div>
+          </section>
+
+          <section className="riquadro flex flex-col gap-3 p-[18px]">
+            <div className="flex items-baseline justify-between">
+              <h3 className="font-display text-xl font-bold">In scena</h3>
+              <span className="font-mono text-xs text-neutral">
+                {stat.gente.length === 1 ? '1 persona' : `${stat.gente.length} persone`}
+              </span>
+            </div>
+            {stat.gente.length === 0 && <p className="text-neutral">Nessuno segnato in Cast.</p>}
+            {cast.personaggi.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="etichetta">Personaggi</span>
+                <ul className="flex flex-wrap gap-1.5">
+                  {cast.personaggi.map((p) => (
+                    <li key={p} className="rounded-full border-2 border-base-300 px-3 py-1.5 text-[15px]">
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {gruppi.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <span className="etichetta">Gruppi</span>
+                <ul className="flex flex-col gap-2">
+                  {gruppi.map((g) => (
+                    <li key={g.nome} className="flex flex-col gap-1">
+                      <span className="inline-flex items-center gap-1.5 self-start rounded-full bg-base-content px-3 py-1.5 text-[15px] font-semibold text-base-200">
+                        <Icon name="gruppo" size={16} className="text-accent" />
+                        {g.nome} · {g.membri.length}
+                      </span>
+                      <span className="pl-1 text-sm text-neutral">
+                        {g.membri.length > 0 ? g.membri.join(', ') : 'nessun personaggio nel gruppo'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </section>
+
+          {stat.gente.length > 0 && (
+            <section className="riquadro flex flex-col gap-2 p-[18px]">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="font-display text-xl font-bold">Con chi c’è</h3>
+                <BadgeSostituti stat={stat} />
+              </div>
+              <p className="text-base leading-normal">
+                {stat.mancanti.length === 0
+                  ? 'Ci sono tutti: si può provare al completo.'
+                  : `Mancano: ${stat.mancanti.join(', ')}`}
+              </p>
+            </section>
+          )}
+
+          {scena.note && (
+            <section className="riquadro flex flex-col gap-2 p-[18px]">
+              <h3 className="font-display text-xl font-bold">Note</h3>
+              <p className="text-base leading-normal whitespace-pre-line">{scena.note}</p>
+            </section>
+          )}
+
+          <button
+            type="button"
+            onClick={onTutteLeScene}
+            className="ombra min-h-12 rounded-field border-2 border-base-content bg-base-100 font-semibold"
+          >
+            Tutte le scene
           </button>
         </div>
-
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-          <dt className="opacity-70">Canzone</dt>
-          <dd>{siNo(scena.canzone)}</dd>
-          <dt className="opacity-70">Coro</dt>
-          <dd>{siNo(scena.coro)}</dd>
-          <dt className="opacity-70">Coreografia</dt>
-          <dd>{siNo(scena.coreografia)}</dd>
-          <dt className="opacity-70">Pagina del copione</dt>
-          <dd>{scena.pagina || '—'}</dd>
-          <dt className="opacity-70">Volte provata</dt>
-          <dd>{stat.volteProvata}</dd>
-          <dt className="opacity-70">Ultima prova</dt>
-          <dd>{stat.ultimaProva ? formatDate(stat.ultimaProva) : stat.volteProvata > 0 ? 'data non leggibile' : 'mai'}</dd>
-        </dl>
-
-        {scena.note && <p className="rounded-box bg-base-200 p-3 text-sm whitespace-pre-line">{scena.note}</p>}
-
-        <section className="space-y-2 text-sm">
-          <h3 className="font-medium">In scena ({stat.gente.length})</h3>
-          {stat.gente.length === 0 ? (
-            <p className="opacity-70">Nessuno segnato in Cast.</p>
-          ) : (
-            <>
-              {cast.personaggi.length > 0 && (
-                <p>
-                  <span className="opacity-70">Personaggi: </span>
-                  {cast.personaggi.join(', ')}
-                </p>
-              )}
-              {gruppi.map((g) => (
-                <p key={g.nome}>
-                  <span className="opacity-70">{g.nome}: </span>
-                  {g.membri.length > 0 ? g.membri.join(', ') : 'nessun personaggio nel gruppo'}
-                </p>
-              ))}
-            </>
-          )}
-        </section>
-
-        <section className="space-y-1 text-sm">
-          <h3 className="font-medium">Con le presenze attuali</h3>
-          {stat.gente.length === 0 ? null : stat.mancanti.length === 0 ? (
-            <p className="text-success">Ci sono tutti: provabile al completo.</p>
-          ) : (
-            <p>
-              Mancano {stat.mancanti.length}: {stat.mancanti.join(', ')}
-            </p>
-          )}
-        </section>
       </div>
       <button type="button" className="modal-backdrop" onClick={onChiudi} aria-label="Chiudi" />
     </dialog>
   );
 }
+
+const CHIP = 'inline-flex min-h-8 items-center gap-1.5 rounded-full px-3 text-sm font-semibold';
