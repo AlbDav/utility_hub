@@ -15,9 +15,9 @@ interface Props {
 }
 
 const CARATTERISTICHE: { chiave: 'canzone' | 'coreografia' | 'coro'; nome: string; icona: IconName }[] = [
-  { chiave: 'canzone', nome: 'canzone', icona: 'canzone' },
-  { chiave: 'coreografia', nome: 'coreografia', icona: 'coreografia' },
-  { chiave: 'coro', nome: 'coro', icona: 'gruppo' },
+  { chiave: 'canzone', nome: 'Canzone', icona: 'canzone' },
+  { chiave: 'coreografia', nome: 'Coreografia', icona: 'coreografia' },
+  { chiave: 'coro', nome: 'Coro', icona: 'coro' },
 ];
 
 /** Scheda di una scena, aperta sopra la vista da cui si arriva: a tutto schermo sul telefono. */
@@ -67,11 +67,14 @@ export function SchedaScena({ data, scena, presenti, onChiudi, onTutteLeScene }:
               scena[chiave] ? (
                 <li key={chiave} className={`${CHIP} bg-base-200 text-base-content`}>
                   <Icon name={icona} size={16} />
-                  <span className="first-letter:uppercase">{nome}</span>
+                  {nome}
                 </li>
               ) : (
-                <li key={chiave} className={`${CHIP} border-2 border-neutral text-base-300 line-through decoration-2`}>
-                  <span>senza {nome}</span>
+                // Assente: stessa etichetta, barrata; il «no» lo legge chi usa la lettura dello schermo.
+                <li key={chiave} className={`${CHIP} border-2 border-neutral text-base-300`}>
+                  <Icon name={icona} size={16} />
+                  <span className="line-through decoration-2">{nome}</span>
+                  <span className="sr-only">: no</span>
                 </li>
               ),
             )}
@@ -88,14 +91,14 @@ export function SchedaScena({ data, scena, presenti, onChiudi, onTutteLeScene }:
           <section className="riquadro grid grid-cols-2 overflow-hidden">
             <div className="flex flex-col gap-1.5 p-4">
               <span className="display text-4xl leading-[0.9]">{stat.volteProvata}</span>
-              <span className="etichetta">{stat.volteProvata === 1 ? 'volta provata' : 'volte provata'}</span>
+              <span className="etichetta">{stat.volteProvata === 1 ? 'Volta provata' : 'Volte provata'}</span>
             </div>
             <div className="flex flex-col gap-1.5 border-l-2 border-base-content p-4">
               <span className="font-display text-[26px] leading-tight font-extrabold">
-                {stat.ultimaProva ? giornoMese(stat.ultimaProva) : stat.volteProvata > 0 ? '—' : 'mai'}
+                {stat.ultimaProva ? giornoMese(stat.ultimaProva) : stat.volteProvata > 0 ? '—' : 'Mai'}
               </span>
               <span className="etichetta">
-                {stat.ultimaProva || stat.volteProvata === 0 ? 'ultima prova' : 'data non leggibile'}
+                {stat.ultimaProva || stat.volteProvata === 0 ? 'Ultima prova' : 'Data non leggibile'}
               </span>
             </div>
           </section>
@@ -131,7 +134,7 @@ export function SchedaScena({ data, scena, presenti, onChiudi, onTutteLeScene }:
                         {g.nome} · {g.membri.length}
                       </span>
                       <span className="pl-1 text-sm text-neutral">
-                        {g.membri.length > 0 ? g.membri.join(', ') : 'nessun personaggio nel gruppo'}
+                        {g.membri.length > 0 ? g.membri.join(', ') : 'Nessun personaggio nel gruppo'}
                       </span>
                     </li>
                   ))}

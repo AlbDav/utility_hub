@@ -13,10 +13,10 @@ export function giorniAllaPrima(oggi: Date, prima: Date): number {
 
 /** Etichetta sotto il numero dei giorni che mancano alla prima. */
 export function etichettaConto(giorni: number): string {
-  if (giorni > 1) return 'giorni alla prima';
-  if (giorni === 1) return 'giorno alla prima';
-  if (giorni === 0) return 'oggi è la prima';
-  return 'la prima è passata';
+  if (giorni > 1) return 'Giorni alla prima';
+  if (giorni === 1) return 'Giorno alla prima';
+  if (giorni === 0) return 'Oggi è la prima';
+  return 'La prima è passata';
 }
 
 /** Livello di colore (0…3) delle volte provata, sulla scala dal minimo al massimo attuale. */
