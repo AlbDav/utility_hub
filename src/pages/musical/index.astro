@@ -1,0 +1,10 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { trovaUtility } from '../../utilities';
+
+const utility = trovaUtility('musical');
+---
+
+<Layout title={utility.nome}>
+  <p class="opacity-70">Planner prove: in arrivo con DAV-328.</p>
+</Layout>

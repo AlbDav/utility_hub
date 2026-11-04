@@ -1,0 +1,50 @@
+---
+import { pwaInfo } from 'virtual:pwa-info';
+import { pwaAssetsHead } from 'virtual:pwa-assets/head';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  /** Mostra il ritorno alla home nell'intestazione. */
+  back?: boolean;
+}
+
+const { title, back = true } = Astro.props;
+const pageTitle = title === 'Hub' ? 'Hub' : `${title} · Hub`;
+---
+
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{pageTitle}</title>
+
+    {pwaAssetsHead.themeColor && <meta name={pwaAssetsHead.themeColor.name} content={pwaAssetsHead.themeColor.content} />}
+    {pwaAssetsHead.links.map((link) => <link {...link} />)}
+    {pwaInfo && <Fragment set:html={pwaInfo.webManifest.linkTag} />}
+
+    <!-- iOS: apertura a schermo intero dalla schermata Home -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Hub" />
+
+    <script>
+      import { registerSW } from 'virtual:pwa-register';
+      registerSW({ immediate: true });
+    </script>
+  </head>
+  <body class="min-h-dvh bg-base-200">
+    <header class="navbar sticky top-0 z-10 bg-base-100 shadow-sm pt-[env(safe-area-inset-top)]">
+      <div class="flex-none">
+        {back && <a href="/" class="btn btn-ghost btn-sm" aria-label="Torna alla home">← Hub</a>}
+      </div>
+      <h1 class="flex-1 px-2 text-lg font-semibold">{title}</h1>
+    </header>
+    <main class="mx-auto max-w-3xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+      <slot />
+    </main>
+  </body>
+</html>

@@ -1,0 +1,16 @@
+# build
+dist/
+.astro/
+.netlify/
+
+# dipendenze
+node_modules/
+
+# variabili d'ambiente locali
+.env
+.env.*
+!.env.example
+
+# varie
+.DS_Store
+npm-debug.log*
