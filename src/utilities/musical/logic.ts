@@ -6,7 +6,10 @@ import type { MusicalData, Scene } from './data';
 
 export interface StatScena {
   scena: Scene;
-  /** Personaggi in scena, da soli o con un gruppo, senza doppioni, nell'ordine di Personaggi. */
+  /**
+   * Personaggi in scena, senza doppioni, nell'ordine di Personaggi: quelli segnati
+   * da soli in Cast e, se si contano i gruppi, i membri dei gruppi segnati.
+   */
   gente: string[];
   /** Gente in scena non spuntata come presente. */
   mancanti: string[];
@@ -18,19 +21,28 @@ export interface StatScena {
   ultimaProva: Date | null;
 }
 
-export function genteInScena(data: MusicalData, numero: number): string[] {
+/**
+ * Chi è in scena. Con `conGruppi` falso contano solo i personaggi segnati da
+ * soli in Cast, non i membri dei gruppi segnati.
+ */
+export function genteInScena(data: MusicalData, numero: number, conGruppi = true): string[] {
   const cast = data.cast[numero];
   if (!cast) return [];
   const inScena = new Set(cast.personaggi);
-  for (const nomeGruppo of cast.gruppi) {
+  for (const nomeGruppo of conGruppi ? cast.gruppi : []) {
     const gruppo = data.gruppi.find((g) => g.nome === nomeGruppo);
     gruppo?.membri.forEach((m) => inScena.add(m));
   }
   return data.personaggi.filter((p) => inScena.has(p));
 }
 
-export function statScena(data: MusicalData, scena: Scene, presenti: ReadonlySet<string>): StatScena {
-  const gente = genteInScena(data, scena.numero);
+export function statScena(
+  data: MusicalData,
+  scena: Scene,
+  presenti: ReadonlySet<string>,
+  conGruppi = true,
+): StatScena {
+  const gente = genteInScena(data, scena.numero, conGruppi);
   const mancanti = gente.filter((p) => !presenti.has(p));
   const prove = data.prove.filter((p) => p.scene.includes(scena.numero));
   let ultimaProva: Date | null = null;
@@ -122,11 +134,19 @@ export function passaFiltri(scena: Scene, filtri: Filtri): boolean {
   );
 }
 
-/** Le scene filtrate, con le loro statistiche, nell'ordine in cui conviene provarle. */
-export function sceneDaProvare(data: MusicalData, presenti: ReadonlySet<string>, filtri: Filtri = FILTRI_INIZIALI): StatScena[] {
+/**
+ * Le scene filtrate, con le loro statistiche, nell'ordine in cui conviene provarle.
+ * `conGruppi` decide se i membri dei gruppi segnati contano nella gente in scena.
+ */
+export function sceneDaProvare(
+  data: MusicalData,
+  presenti: ReadonlySet<string>,
+  filtri: Filtri = FILTRI_INIZIALI,
+  conGruppi = true,
+): StatScena[] {
   return data.scene
     .filter((s) => passaFiltri(s, filtri))
-    .map((s) => statScena(data, s, presenti))
+    .map((s) => statScena(data, s, presenti, conGruppi))
     .sort(confrontaScene);
 }
 

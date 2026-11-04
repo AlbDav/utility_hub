@@ -3,7 +3,11 @@ import { parseStatoProva, STATO_INIZIALE } from './presenze';
 
 describe('parseStatoProva', () => {
   it('rilegge uno stato salvato', () => {
-    const stato = { presenti: ['Anna'], filtri: { canzone: 'con', coro: 'senza', coreografia: 'tutte' } };
+    const stato = {
+      presenti: ['Anna'],
+      filtri: { canzone: 'con', coro: 'senza', coreografia: 'tutte' },
+      contaGruppi: false,
+    };
     expect(parseStatoProva(stato)).toEqual(stato);
   });
 
@@ -11,6 +15,10 @@ describe('parseStatoProva', () => {
     expect(parseStatoProva(null)).toBeNull();
     expect(parseStatoProva('x')).toBeNull();
     expect(parseStatoProva({ presenti: [1] })).toBeNull();
+  });
+
+  it('conta i gruppi negli stati salvati prima del toggle', () => {
+    expect(parseStatoProva({ presenti: ['Anna'], filtri: {} })?.contaGruppi).toBe(true);
   });
 
   it('rimette indifferente i filtri mancanti o sconosciuti', () => {
