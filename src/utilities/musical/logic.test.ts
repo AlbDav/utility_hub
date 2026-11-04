@@ -62,6 +62,29 @@ describe('genteInScena', () => {
   });
 });
 
+describe('senza contare i gruppi', () => {
+  it('in scena restano solo i personaggi segnati da soli', () => {
+    expect(genteInScena(dati(), 1, false)).toEqual(['Anna']);
+    expect(genteInScena(dati(), 1, true)).toEqual(['Anna', 'Bruno']);
+  });
+
+  it('sostituti e presenti si contano solo su di loro', () => {
+    const s = statScena(dati(), scena(1), new Set(['Anna']), false);
+    expect(s.gente).toEqual(['Anna']);
+    expect(s.sostituti).toBe(0);
+    expect(s.presenti).toBe(1);
+  });
+
+  it('una scena con solo gruppi segnati diventa vuota e va in fondo', () => {
+    const data = dati({
+      scene: [scena(1), scena(2)],
+      cast: { 1: { personaggi: [], gruppi: ['Coro'] }, 2: { personaggi: ['Carla'], gruppi: [] } },
+    });
+    expect(sceneDaProvare(data, new Set(['Anna', 'Bruno']), undefined, true).map((s) => s.scena.numero)).toEqual([1, 2]);
+    expect(sceneDaProvare(data, new Set(['Anna', 'Bruno']), undefined, false).map((s) => s.scena.numero)).toEqual([2, 1]);
+  });
+});
+
 describe('statScena', () => {
   it('calcola mancanti, sostituti e presenti dalle presenze', () => {
     const s = statScena(dati(), scena(1), new Set(['Bruno', 'Dario']));

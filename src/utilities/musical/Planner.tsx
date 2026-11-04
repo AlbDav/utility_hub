@@ -37,6 +37,7 @@ export default function Planner() {
           data={data}
           scena={scenaAperta}
           presenti={presenti}
+          contaGruppi={stato.contaGruppi}
           onChiudi={scheda.chiudi}
           onTutteLeScene={() => {
             scheda.chiudi();

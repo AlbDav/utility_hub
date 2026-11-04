@@ -34,8 +34,13 @@ export function ProvaView({ data, stato, onStato, onApriScena }: Props) {
     [stato.presenti, data.personaggi],
   );
   const sezioni = useMemo(() => sezioniPresenze(data), [data]);
-  const scene = useMemo(() => sceneDaProvare(data, presenti, stato.filtri), [data, presenti, stato.filtri]);
-  const filtriAttivi = Object.values(stato.filtri).filter((f) => f !== 'tutte').length;
+  const scene = useMemo(
+    () => sceneDaProvare(data, presenti, stato.filtri, stato.contaGruppi),
+    [data, presenti, stato.filtri, stato.contaGruppi],
+  );
+  // Anche «senza gruppi» conta come filtro attivo: cambia i numeri delle scene.
+  const filtriAttivi =
+    Object.values(stato.filtri).filter((f) => f !== 'tutte').length + (stato.contaGruppi ? 0 : 1);
   // Aperta all'inizio solo se non c'è ancora nessuna spunta.
   const [aperta, setAperta] = useState(presenti.size === 0);
 
@@ -113,6 +118,23 @@ export function ProvaView({ data, stato, onStato, onApriScena }: Props) {
             </div>
             <p className="text-sm text-neutral">✓ Solo le scene con · ✕ Solo le scene senza · Vuota: indifferente</p>
           </div>
+
+          <label className="flex cursor-pointer items-start gap-3 border-t-2 border-base-300 pt-4">
+            <input
+              type="checkbox"
+              className="toggle toggle-sm mt-0.5 flex-none"
+              checked={stato.contaGruppi}
+              onChange={(e) => onStato({ ...stato, contaGruppi: e.currentTarget.checked })}
+            />
+            <span className="flex flex-col gap-0.5">
+              <span className="text-[15px] font-medium">Conta i gruppi</span>
+              <span className="text-sm text-neutral">
+                {stato.contaGruppi
+                  ? 'In scena ci sono anche i membri dei gruppi segnati in Cast.'
+                  : 'In scena contano solo i personaggi segnati da soli in Cast.'}
+              </span>
+            </span>
+          </label>
         </div>
       </details>
 

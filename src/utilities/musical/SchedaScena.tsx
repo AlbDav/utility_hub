@@ -10,6 +10,8 @@ interface Props {
   data: MusicalData;
   scena: Scene;
   presenti: ReadonlySet<string>;
+  /** Come nella vista Prova: se i membri dei gruppi contano nella gente in scena. */
+  contaGruppi: boolean;
   onChiudi: () => void;
   onTutteLeScene: () => void;
 }
@@ -21,9 +23,9 @@ const CARATTERISTICHE: { chiave: 'canzone' | 'coreografia' | 'coro'; nome: strin
 ];
 
 /** Scheda di una scena, aperta sopra la vista da cui si arriva: a tutto schermo sul telefono. */
-export function SchedaScena({ data, scena, presenti, onChiudi, onTutteLeScene }: Props) {
+export function SchedaScena({ data, scena, presenti, contaGruppi, onChiudi, onTutteLeScene }: Props) {
   const dialog = useRef<HTMLDialogElement>(null);
-  const stat = statScena(data, scena, presenti);
+  const stat = statScena(data, scena, presenti, contaGruppi);
   const cast = data.cast[scena.numero] ?? { personaggi: [], gruppi: [] };
   const gruppi = cast.gruppi.map((nome) => data.gruppi.find((g) => g.nome === nome) ?? { nome, membri: [] });
 
@@ -125,7 +127,7 @@ export function SchedaScena({ data, scena, presenti, onChiudi, onTutteLeScene }:
             )}
             {gruppi.length > 0 && (
               <div className="flex flex-col gap-2">
-                <span className="etichetta">Gruppi</span>
+                <span className="etichetta">{contaGruppi ? 'Gruppi' : 'Gruppi · non contati'}</span>
                 <ul className="flex flex-col gap-2">
                   {gruppi.map((g) => (
                     <li key={g.nome} className="flex flex-col gap-1">
