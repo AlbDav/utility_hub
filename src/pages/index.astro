@@ -1,22 +1,52 @@
 ---
+import Icon from '../components/Icon.astro';
 import Layout from '../layouts/Layout.astro';
+import { aIso, giornoMeseAnno } from '../lib/dates';
 import { utilities, percorso } from '../utilities';
 ---
 
-<Layout title="Hub" back={false}>
-  <ul class="grid gap-3 sm:grid-cols-2">
-    {utilities.map((utility) => (
-      <li>
-        <a href={percorso(utility)} class="card bg-base-100 shadow-sm transition hover:shadow-md">
-          <div class="card-body flex-row items-center gap-4">
-            <span class="text-4xl" aria-hidden="true">{utility.icona}</span>
-            <div>
-              <h2 class="card-title">{utility.nome}</h2>
-              <p class="text-sm opacity-70">{utility.descrizione}</p>
-            </div>
-          </div>
-        </a>
-      </li>
-    ))}
-  </ul>
+<Layout title="Cosa ti serve oggi?" home>
+  <div class="flex flex-col gap-3.5">
+    <p class="etichetta">Attrezzi · {utilities.length}</p>
+    <ul class="grid gap-3.5 sm:grid-cols-2">
+      {
+        utilities.map((utility) => (
+          <li>
+            <a href={percorso(utility)} class="riquadro ombra flex flex-col overflow-hidden">
+              <span class="flex items-center gap-3.5 p-3.5">
+                <span class="flex size-13 flex-none items-center justify-center rounded-[10px] bg-primary text-primary-content">
+                  <Icon name={utility.icona} size={28} />
+                </span>
+                <span class="flex min-w-0 flex-col gap-0.5">
+                  <strong class="font-display text-[19px] font-bold">{utility.nome}</strong>
+                  <span class="text-sm text-neutral">{utility.descrizione}</span>
+                </span>
+                <Icon name="avanti" strokeWidth={2.5} class="ml-auto flex-none" />
+              </span>
+              {utility.scadenza && (
+                <span class="flex justify-between gap-3 border-t-2 border-base-content bg-base-200 px-3.5 py-2.5 font-mono text-xs font-medium tracking-[0.04em]">
+                  <span>
+                    <span data-conto={aIso(utility.scadenza.data)}>…</span> giorni {utility.scadenza.etichetta}
+                  </span>
+                  <span class="text-neutral">{giornoMeseAnno(utility.scadenza.data)}</span>
+                </span>
+              )}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="flex min-h-21 items-center justify-center rounded-box border-2 border-dashed border-base-300 text-sm text-neutral">
+      Qui andrà la prossima utility
+    </p>
+  </div>
 </Layout>
+
+<script>
+  import { daIso, giorniTra } from '../lib/dates';
+
+  // Il conto alla rovescia si calcola nel browser: la pagina è statica e resta in cache.
+  for (const el of document.querySelectorAll<HTMLElement>('[data-conto]')) {
+    el.textContent = String(Math.max(0, giorniTra(new Date(), daIso(el.dataset.conto!))));
+  }
+</script>

@@ -1,22 +1,23 @@
 import { useMemo } from 'react';
+import { dataPrima } from './config';
 import type { MusicalData } from './data';
 import { statScena } from './logic';
-import { estremiScala, giorniAllaPrima, legenda, livello, testoConto } from './panoramica';
+import { estremiScala, etichettaConto, giorniAllaPrima, legenda, livello } from './panoramica';
 
 interface Props {
   data: MusicalData;
   onApriScena: (numero: number) => void;
 }
 
-/** Quattro tonalità, dalla meno provata alla più provata. */
+/** Scala «provata»: quattro tonalità, dalla meno alla più provata. */
 const COLORI = [
-  'bg-primary/10 text-base-content',
-  'bg-primary/30 text-base-content',
-  'bg-primary/60 text-primary-content',
-  'bg-primary text-primary-content',
+  'bg-provata-1 border-transparent',
+  'bg-provata-2 border-transparent',
+  'bg-provata-3 border-transparent',
+  'bg-provata-4 border-provata-4 text-base-100',
 ];
 
-const MAI_PROVATA = 'bg-error/10 text-error border-2 border-dashed border-error';
+const MAI_PROVATA = 'bg-base-100 text-error border-dashed border-primary';
 
 const nessuno = new Set<string>();
 
@@ -25,56 +26,69 @@ export function PanoramicaView({ data, onApriScena }: Props) {
   const scala = estremiScala(scene.map((s) => s.volteProvata));
   const maiProvate = scene.filter((s) => s.volteProvata === 0).length;
   const voci = scala ? legenda(scala.min, scala.max) : [];
+  const giorni = dataPrima ? giorniAllaPrima(new Date(), dataPrima) : null;
 
   return (
-    <div className="space-y-4">
-      <p className="rounded-box bg-base-100 px-3 py-2 text-center font-medium shadow-sm">
-        {testoConto(giorniAllaPrima(new Date()))}
-        <span className="block text-xs font-normal opacity-70">8 maggio 2027</span>
-      </p>
+    <div className="flex flex-col gap-6">
+      <section className="riquadro grid grid-cols-2 overflow-hidden">
+        <div className="flex flex-col gap-1.5 bg-primary p-4 text-primary-content">
+          <span className="display text-[44px] leading-[0.9]">{giorni === null ? '—' : Math.max(0, giorni)}</span>
+          <span className="font-mono text-xs font-medium tracking-[0.08em] uppercase">
+            {giorni === null ? 'data della prima da impostare' : etichettaConto(giorni)}
+          </span>
+        </div>
+        <div className="flex flex-col gap-1.5 border-l-2 border-base-content p-4">
+          <span className="display text-[44px] leading-[0.9]">{maiProvate}</span>
+          <span className="etichetta">{maiProvate === 1 ? 'scena mai provata' : 'scene mai provate'}</span>
+        </div>
+      </section>
 
-      <ul className="grid grid-cols-6 gap-1.5 sm:grid-cols-8">
-        {scene.map((s) => {
-          const mai = s.volteProvata === 0;
-          return (
-            <li key={s.scena.numero}>
-              <button
-                type="button"
-                onClick={() => onApriScena(s.scena.numero)}
-                className={`flex aspect-square w-full flex-col items-center justify-center rounded-field leading-tight ${
-                  mai || !scala ? MAI_PROVATA : COLORI[livello(s.volteProvata, scala.min, scala.max)]
-                }`}
-                aria-label={`Scena ${s.scena.numero}${s.scena.titolo ? `, ${s.scena.titolo}` : ''}: ${
-                  mai ? 'mai provata' : `provata ${s.volteProvata} volte`
-                }`}
-              >
-                <span className="text-base font-semibold tabular-nums">{s.scena.numero}</span>
-                <span className="text-[0.65rem] opacity-80">{mai ? 'mai' : `×${s.volteProvata}`}</span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-
-      <div className="space-y-2 rounded-box bg-base-100 p-3 text-xs shadow-sm">
-        <p className="font-medium">Volte provata</p>
-        <ul className="flex flex-wrap gap-x-3 gap-y-2">
-          {maiProvate > 0 && (
-            <li className="flex items-center gap-1.5">
-              <span className={`inline-block size-4 rounded-sm ${MAI_PROVATA}`} aria-hidden="true" />
-              mai ({maiProvate})
-            </li>
-          )}
-          {voci.map((voce, i) =>
-            voce === null ? null : (
-              <li key={i} className="flex items-center gap-1.5">
-                <span className={`inline-block size-4 rounded-sm ${COLORI[i]}`} aria-hidden="true" />
-                {voce}
+      <section className="flex flex-col gap-3">
+        <h2 className="font-display text-[22px] leading-tight font-bold">Le {scene.length} scene</h2>
+        <ul className="grid grid-cols-5 gap-2 sm:grid-cols-8">
+          {scene.map((s) => {
+            return (
+              <li key={s.scena.numero}>
+                <button
+                  type="button"
+                  onClick={() => onApriScena(s.scena.numero)}
+                  className={`flex aspect-square w-full flex-col items-center justify-center gap-1 rounded-field border-2 ${
+                    s.volteProvata === 0 || !scala ? MAI_PROVATA : COLORI[livello(s.volteProvata, scala.min, scala.max)]
+                  }`}
+                  aria-label={`Scena ${s.scena.numero}${s.scena.titolo ? `, ${s.scena.titolo}` : ''}: ${
+                    s.volteProvata === 0 ? 'mai provata' : `provata ${s.volteProvata} volte`
+                  }`}
+                >
+                  <span className="font-display text-xl leading-none font-extrabold [font-stretch:110%]">
+                    {s.scena.numero}
+                  </span>
+                  <span className="font-mono text-[11px] font-semibold">
+                    {s.volteProvata === 0 ? 'mai' : `×${s.volteProvata}`}
+                  </span>
+                </button>
               </li>
-            ),
-          )}
+            );
+          })}
         </ul>
-      </div>
+      </section>
+
+      <section className="flex flex-col gap-2.5">
+        <span className="etichetta">Volte provata</span>
+        <ul className="flex flex-wrap items-center gap-2">
+          {maiProvate > 0 && <VoceLegenda classe={MAI_PROVATA} testo="0" />}
+          {voci.map((voce, i) => (voce === null ? null : <VoceLegenda key={i} classe={COLORI[i]} testo={voce} />))}
+        </ul>
+      </section>
     </div>
+  );
+}
+
+function VoceLegenda({ classe, testo }: { classe: string; testo: string }) {
+  return (
+    <li
+      className={`flex h-8 min-w-10 items-center justify-center rounded-md border-2 px-2 font-mono text-xs font-semibold ${classe}`}
+    >
+      {testo}
+    </li>
   );
 }

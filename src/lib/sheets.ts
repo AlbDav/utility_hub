@@ -7,6 +7,7 @@
  * senza rete l'app mostra l'ultima copia e sa a quando risale.
  */
 import Papa from 'papaparse';
+import { giornoMese } from './dates';
 import { loadJson, saveJson } from './storage';
 
 export interface Table {
@@ -114,16 +115,6 @@ export function formatTime(date: Date): string {
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
-/** «4/11» */
-export function formatDayMonth(date: Date): string {
-  return `${date.getDate()}/${date.getMonth() + 1}`;
-}
-
-/** «4/11/2026» */
-export function formatDate(date: Date): string {
-  return `${formatDayMonth(date)}/${date.getFullYear()}`;
-}
-
 export type SheetStatus =
   | { kind: 'loading' }
   | { kind: 'fresh'; fetchedAt: Date }
@@ -133,17 +124,16 @@ export type SheetStatus =
 
 /** Testo dell'indicatore dei dati. */
 export function describeStatus(status: SheetStatus): string {
+  const quando = (d: Date) => `${giornoMese(d)}, ${formatTime(d)}`;
   switch (status.kind) {
     case 'loading':
       return 'Caricamento dei dati…';
     case 'fresh':
-      return `Aggiornato alle ${formatTime(status.fetchedAt)}`;
+      return `Aggiornato dal foglio · alle ${formatTime(status.fetchedAt)}`;
     case 'refreshing':
-      return `Dati del ${formatDayMonth(status.fetchedAt)} alle ${formatTime(status.fetchedAt)} · aggiornamento…`;
-    case 'stale': {
-      const when = `dati del ${formatDayMonth(status.fetchedAt)} alle ${formatTime(status.fetchedAt)}`;
-      return status.offline ? `Offline: ${when}` : `Download non riuscito: ${when}`;
-    }
+      return `Dati del ${quando(status.fetchedAt)} · aggiornamento…`;
+    case 'stale':
+      return `${status.offline ? 'Offline' : 'Download non riuscito'} · dati del ${quando(status.fetchedAt)}`;
     case 'unavailable':
       return status.offline
         ? 'Offline e nessuna copia salvata: apri la pagina con la rete almeno una volta.'

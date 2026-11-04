@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly PUBLIC_MUSICAL_GID_CAST?: string;
   readonly PUBLIC_MUSICAL_GID_PROVE?: string;
   readonly PUBLIC_MUSICAL_USE_FIXTURES?: string;
+  readonly PUBLIC_MUSICAL_DATA_PRIMA?: string;
 }
 
 interface ImportMeta {

@@ -7,6 +7,7 @@ import {
   parseHashScena,
   percentualePresenti,
   sceneDaProvare,
+  sezioniPresenze,
   statScena,
 } from './logic';
 
@@ -204,5 +205,22 @@ describe('hash della scheda scena', () => {
     expect(parseHashScena('')).toBeNull();
     expect(parseHashScena('#scena-')).toBeNull();
     expect(parseHashScena('#altro')).toBeNull();
+  });
+});
+
+describe('sezioniPresenze', () => {
+  it('mette prima chi non ha gruppo, poi ogni gruppo senza ripetere nessuno', () => {
+    const data = dati({
+      gruppi: [
+        { nome: 'Coro', membri: ['Anna', 'Bruno'] },
+        { nome: 'Ballo', membri: ['Bruno', 'Carla'] },
+        { nome: 'Vuoto', membri: [] },
+      ],
+    });
+    expect(sezioniPresenze(data)).toEqual([
+      { nome: 'Personaggi', persone: ['Dario'] },
+      { nome: 'Coro', persone: ['Anna', 'Bruno'] },
+      { nome: 'Ballo', persone: ['Carla'] },
+    ]);
   });
 });

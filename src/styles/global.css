@@ -1,4 +1,90 @@
 @import "tailwindcss";
+@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/instrument-sans";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+
 @plugin "daisyui" {
-  themes: light --default, dark --prefersdark;
+  themes: officina --default;
+}
+
+/* Design system «Officina»: carta chiara, inchiostro caldo, rosso da cassetta. */
+@plugin "daisyui/theme" {
+  name: "officina";
+  default: true;
+  color-scheme: light;
+  --color-base-100: #FBF8F2;
+  --color-base-200: #F4EFE6;
+  --color-base-300: #DCD3C4;
+  --color-base-content: #1F1B16;
+  --color-primary: #C8361E;
+  --color-primary-content: #FBF8F2;
+  --color-secondary: #1F1B16;
+  --color-secondary-content: #F4EFE6;
+  --color-accent: #E7A928;
+  --color-accent-content: #1F1B16;
+  --color-neutral: #5E554A;
+  --color-neutral-content: #FBF8F2;
+  --color-info: #2D5B8A;
+  --color-info-content: #FBF8F2;
+  --color-success: #2F6B4F;
+  --color-success-content: #FBF8F2;
+  --color-warning: #E7A928;
+  --color-warning-content: #1F1B16;
+  --color-error: #9E2A17;
+  --color-error-content: #FBF8F2;
+  --radius-selector: 2rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
+  --border: 2px;
+  --depth: 0;
+  --noise: 0;
+}
+
+@theme {
+  --font-sans: "Instrument Sans Variable", system-ui, sans-serif;
+  --font-display: "Archivo Variable", "Arial Black", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  /* Scala «provata» della panoramica, dalla meno alla più provata. */
+  --color-provata-1: #F6DFC4;
+  --color-provata-2: #EDBB8A;
+  --color-provata-3: #D98A4E;
+  --color-provata-4: #A8471F;
+}
+
+/* Titoli grandi: Archivo Expanded 850, maiuscolo. */
+@utility display {
+  font-family: var(--font-display);
+  font-stretch: 125%;
+  font-weight: 850;
+  line-height: 0.95;
+  text-transform: uppercase;
+}
+
+/* Etichette: Plex Mono 12 px, maiuscolo, spaziatura +8%. */
+@utility etichetta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-neutral);
+}
+
+/* Ombra piena da 3 px su ciò che si tocca: premuto, l'elemento scende e l'ombra sparisce. */
+@utility ombra {
+  box-shadow: 3px 3px 0 var(--color-base-content);
+  transition: transform 80ms, box-shadow 80ms;
+  &:active {
+    transform: translate(3px, 3px);
+    box-shadow: none;
+  }
+}
+
+/* Riquadro dell'Officina: foglio, bordo inchiostro da 2 px. */
+@utility riquadro {
+  background: var(--color-base-100);
+  border: 2px solid var(--color-base-content);
+  border-radius: var(--radius-box);
 }
