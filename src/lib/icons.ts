@@ -4,16 +4,17 @@
  * Icon.astro le disegnano.
  */
 import {
+  BookOpenText,
   CalendarCheck,
   Check,
   ChevronLeft,
   ChevronRight,
-  FileText,
-  Music,
+  MicVocal,
   PersonStanding,
   RefreshCw,
-  Theater,
-  TriangleAlert,
+  SixteenthNotes,
+  Spotlight,
+  TriangleExclamationPoint,
   Users,
   WifiOff,
   X,
@@ -23,16 +24,17 @@ import {
 export const icons = {
   indietro: ChevronLeft,
   avanti: ChevronRight,
-  canzone: Music,
+  canzone: SixteenthNotes,
   coreografia: PersonStanding,
-  pagina: FileText,
+  pagina: BookOpenText,
   prova: CalendarCheck,
   gruppo: Users,
-  sipario: Theater,
+  coro: MicVocal,
+  riflettore: Spotlight,
   aggiorna: RefreshCw,
   offline: WifiOff,
   spunta: Check,
-  avviso: TriangleAlert,
+  avviso: TriangleExclamationPoint,
   croce: X,
 } satisfies Record<string, IconNode>;
 
@@ -40,9 +42,9 @@ export type IconName = keyof typeof icons;
 
 const escape = (value: string) => value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
-/** Il contenuto dell'<svg viewBox="0 0 24 24"> di un'icona. */
-export function iconMarkup(name: IconName): string {
-  return icons[name]
+/** Il contenuto dell'<svg viewBox="0 0 24 24"> di un'icona Lucide. */
+export function nodeMarkup(node: IconNode): string {
+  return node
     .map(([tag, attrs]) => {
       const attributi = Object.entries(attrs)
         .map(([k, v]) => `${k}="${escape(String(v))}"`)
@@ -50,4 +52,9 @@ export function iconMarkup(name: IconName): string {
       return `<${tag} ${attributi}/>`;
     })
     .join('');
+}
+
+/** Il contenuto dell'<svg viewBox="0 0 24 24"> di un'icona dell'hub. */
+export function iconMarkup(name: IconName): string {
+  return nodeMarkup(icons[name]);
 }

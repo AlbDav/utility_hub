@@ -17,10 +17,10 @@ describe('giorniAllaPrima', () => {
   });
 
   it('ha un’etichetta per prima, durante e dopo', () => {
-    expect(etichettaConto(185)).toBe('giorni alla prima');
-    expect(etichettaConto(1)).toBe('giorno alla prima');
-    expect(etichettaConto(0)).toBe('oggi è la prima');
-    expect(etichettaConto(-3)).toBe('la prima è passata');
+    expect(etichettaConto(185)).toBe('Giorni alla prima');
+    expect(etichettaConto(1)).toBe('Giorno alla prima');
+    expect(etichettaConto(0)).toBe('Oggi è la prima');
+    expect(etichettaConto(-3)).toBe('La prima è passata');
   });
 });
 

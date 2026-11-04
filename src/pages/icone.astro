@@ -1,0 +1,253 @@
+---
+/**
+ * Pagina di lavoro: le icone usate nell'hub, perché, e le alternative di Lucide.
+ * Non è nel registro delle utility; si apre da /icone/.
+ */
+import { existsSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { icons as lucide, type IconNode } from 'lucide';
+import Layout from '../layouts/Layout.astro';
+import { icons, nodeMarkup, type IconName } from '../lib/icons';
+
+interface Voce {
+  nome: IconName;
+  dove: string;
+  perche: string;
+  /** Nomi Lucide, divisi in gruppi con un titolo quando sono tanti. */
+  alternative: { titolo?: string; icone: string[] }[];
+}
+
+const semplici = (...icone: string[]) => [{ icone }];
+
+const voci: Voce[] = [
+  {
+    nome: 'riflettore',
+    dove: 'Cassetto del Musical in home',
+    perche: 'Scelta da te: il riflettore sul palco.',
+    alternative: [
+      {
+        titolo: 'Teatro',
+        icone: ['Theater', 'Drama', 'VenetianMask', 'LampCeiling', 'Armchair', 'Clapperboard', 'Film', 'Popcorn'],
+      },
+      {
+        titolo: 'Musica',
+        icone: ['EighthNotes', 'EighthNote', 'SixteenthNotes', 'MicVocal', 'AudioLines', 'Guitar', 'Piano', 'Drum'],
+      },
+      {
+        titolo: 'Copione e prove',
+        icone: ['ScrollText', 'BookOpenText', 'NotebookPen', 'CalendarCheck', 'Megaphone', 'Presentation'],
+      },
+      { titolo: 'Spettacolo e prima', icone: ['Ticket', 'Tickets', 'Star', 'Sparkles', 'PartyPopper', 'Crown'] },
+      {
+        titolo: 'Dal titolo e dalla storia',
+        icone: [
+          'Utensils',
+          'UtensilsCrossed',
+          'ChefHat',
+          'CookingPot',
+          'Wine',
+          'Church',
+          'Ship',
+          'Sailboat',
+          'CloudRain',
+          'Rainbow',
+          'Bird',
+          'HeartHandshake',
+        ],
+      },
+    ],
+  },
+  {
+    nome: 'indietro',
+    dove: 'Ritorno alla home, «Indietro» nella scheda scena',
+    perche: 'Freccia leggera, la stessa del design; accanto c’è sempre il testo.',
+    alternative: semplici('ArrowLeft', 'MoveLeft', 'Undo2', 'House'),
+  },
+  {
+    nome: 'avanti',
+    dove: 'Freccia a destra nel cassetto della home',
+    perche: 'Indica che il cassetto si apre in un’altra pagina.',
+    alternative: semplici('ArrowRight', 'MoveRight', 'ChevronsRight'),
+  },
+  {
+    nome: 'canzone',
+    dove: 'Chip «Canzone» nella scheda scena',
+    perche: 'Scelta da te: le note musicali.',
+    alternative: semplici('EighthNotes', 'EighthNote', 'AudioLines', 'Guitar', 'Piano'),
+  },
+  {
+    nome: 'coreografia',
+    dove: 'Chip «Coreografia» nella scheda scena',
+    perche: 'Una figura in piedi: in Lucide non c’è un ballerino.',
+    alternative: [
+      { titolo: 'Figure e movimento', icone: ['Accessibility', 'Footprints', 'PersonStanding', 'HandMetal', 'Hand'] },
+      { titolo: 'Ritmo e scena', icone: ['Activity', 'AudioWaveform', 'WavesHorizontal', 'Wind', 'Sparkles', 'Shell'] },
+    ],
+  },
+  {
+    nome: 'coro',
+    dove: 'Chip «Coro» nella scheda scena',
+    perche: 'Scelta da te: il microfono della voce.',
+    alternative: [
+      { titolo: 'Persone', icone: ['Users', 'UsersRound', 'Speech', 'MessagesSquare'] },
+      { titolo: 'Voce e musica', icone: ['AudioLines', 'SixteenthNotes', 'Volume2', 'Megaphone', 'Church'] },
+    ],
+  },
+  {
+    nome: 'gruppo',
+    dove: 'Gruppi nella scheda scena',
+    perche: 'Più persone insieme, come i gruppi di Personaggi.',
+    alternative: semplici('UsersRound', 'Handshake', 'Shapes'),
+  },
+  {
+    nome: 'pagina',
+    dove: 'Chip «Pag. N» nella scheda scena',
+    perche: 'Scelta da te: il copione aperto.',
+    alternative: semplici('FileText', 'ScrollText', 'Bookmark', 'File'),
+  },
+  {
+    nome: 'prova',
+    dove: 'Non usata per ora (nel design: «prova»)',
+    perche: 'Calendario con la spunta: una prova fatta in una certa data.',
+    alternative: semplici('Calendar', 'CalendarDays', 'ClipboardCheck'),
+  },
+  {
+    nome: 'aggiorna',
+    dove: 'Pulsante per riscaricare i dati dal foglio',
+    perche: 'Le frecce in cerchio sono il gesto universale di «ricarica».',
+    alternative: semplici('RotateCw', 'RefreshCcw', 'CloudDownload'),
+  },
+  {
+    nome: 'offline',
+    dove: 'Indicatore dei dati quando si usa la copia salvata',
+    perche: 'Il Wi-Fi barrato dice subito «senza rete».',
+    alternative: semplici('CloudOff', 'Unplug', 'SignalZero'),
+  },
+  {
+    nome: 'spunta',
+    dove: 'Chip dei presenti e filtri «solo con»',
+    perche: 'La spunta semplice, leggibile anche a 16 px.',
+    alternative: semplici('CircleCheck', 'SquareCheck', 'CheckCheck'),
+  },
+  {
+    nome: 'croce',
+    dove: 'Filtri «senza»',
+    perche: 'La croce si oppone alla spunta: escludere.',
+    alternative: semplici('CircleX', 'Ban', 'Minus'),
+  },
+  {
+    nome: 'avviso',
+    dove: 'Avvisi sui dati del foglio',
+    perche: 'Il triangolo è il segnale di attenzione più riconoscibile.',
+    alternative: semplici('CircleExclamationPoint', 'OctagonExclamationPoint', 'Info'),
+  },
+];
+
+/** «VenetianMask» → «venetian-mask», «Music2» → «music-2», per il link su lucide.dev. */
+const kebab = (nome: string) =>
+  nome
+    .replace(/([a-z])([A-Z0-9])/g, '$1-$2')
+    .replace(/([0-9])([A-Z])/g, '$1-$2')
+    .toLowerCase();
+
+// Cartella dei file delle icone di Lucide: un file per icona, col nome ufficiale.
+const require = createRequire(import.meta.url);
+const cartellaIcone = join(dirname(require.resolve('lucide')), '../esm/icons');
+
+/**
+ * Nome ufficiale di un'icona. Lucide tiene anche i nomi vecchi come alias
+ * (Music → EighthNotes): vale quello che ha un file, l'unico con una pagina su lucide.dev.
+ */
+const nomeLucide = (node: IconNode) => {
+  const nomi = Object.entries(lucide)
+    .filter(([, n]) => n === node)
+    .map(([nome]) => nome);
+  const ufficiale = nomi.find((nome) => existsSync(join(cartellaIcone, `${kebab(nome)}.mjs`)));
+  if (!ufficiale) throw new Error(`Icona senza nome ufficiale in Lucide: ${nomi.join(', ')}`);
+  return ufficiale;
+};
+
+const alternativa = (nome: string): IconNode => {
+  const node = (lucide as Record<string, IconNode>)[nome];
+  if (!node) throw new Error(`Icona Lucide inesistente: ${nome}`);
+  if (nomeLucide(node) !== nome) throw new Error(`${nome} è un alias: usa ${nomeLucide(node)}`);
+  return node;
+};
+
+const link = (nome: string) => `https://lucide.dev/icons/${kebab(nome)}`;
+---
+
+<Layout title="Icone" subtitle="Quelle usate nell’hub e le alternative di Lucide">
+  <div class="flex flex-col gap-4">
+    <p class="text-sm text-neutral">
+      Tutte le icone vengono da <a class="underline" href="https://lucide.dev">Lucide</a>. Tocca un’icona per aprirla sul
+      sito.
+    </p>
+    {
+      voci.map((voce) => {
+        const usata = nomeLucide(icons[voce.nome]);
+        return (
+          <section class="riquadro flex flex-col gap-4 p-[18px]">
+            <div class="flex items-start gap-4">
+              <a
+                href={link(usata)}
+                class="flex size-16 flex-none items-center justify-center rounded-[10px] bg-primary text-primary-content"
+                aria-label={`${usata} su lucide.dev`}
+              >
+                <svg
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                  set:html={nodeMarkup(icons[voce.nome])}
+                />
+              </a>
+              <div class="flex min-w-0 flex-col gap-1">
+                <span class="etichetta">
+                  {voce.nome} · {usata}
+                </span>
+                <h2 class="font-display text-lg leading-tight font-bold">{voce.dove}</h2>
+                <p class="text-sm text-neutral">{voce.perche}</p>
+              </div>
+            </div>
+            {voce.alternative.map((gruppo, i) => (
+              <div class="flex flex-col gap-2">
+                <span class="etichetta">{gruppo.titolo ?? (i === 0 ? 'Alternative' : '')}</span>
+                <ul class="flex flex-wrap gap-2">
+                  {gruppo.icone.map((nome) => (
+                    <li>
+                      <a
+                        href={link(nome)}
+                        class="flex min-h-11 items-center gap-2 rounded-field border-2 border-base-300 bg-base-200 px-3 text-sm"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                          set:html={nodeMarkup(alternativa(nome))}
+                        />
+                        {nome}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </section>
+        );
+      })
+    }
+  </div>
+</Layout>

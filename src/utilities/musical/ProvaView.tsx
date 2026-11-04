@@ -111,7 +111,7 @@ export function ProvaView({ data, stato, onStato, onApriScena }: Props) {
                 />
               ))}
             </div>
-            <p className="text-sm text-neutral">✓ solo le scene con · ✕ solo le scene senza · vuota indifferente</p>
+            <p className="text-sm text-neutral">✓ Solo le scene con · ✕ Solo le scene senza · Vuota: indifferente</p>
           </div>
         </div>
       </details>
@@ -119,7 +119,7 @@ export function ProvaView({ data, stato, onStato, onApriScena }: Props) {
       <section className="flex flex-col gap-3">
         <div className="flex items-baseline justify-between gap-3">
           <h2 className="font-display text-[22px] leading-tight font-bold">Scene da provare</h2>
-          <span className="font-mono text-xs text-neutral">in quest’ordine</span>
+          <span className="font-mono text-xs text-neutral">In quest’ordine</span>
         </div>
         {scene.length === 0 ? (
           <p className="text-center text-sm text-neutral">Nessuna scena con questi filtri.</p>
@@ -184,8 +184,8 @@ function RigaScena({ stat, posizione, onApri }: { stat: StatScena; posizione: nu
         <span className="font-mono text-xs text-neutral">
           {stat.gente.length > 0 && `${stat.presenti}/${stat.gente.length} presenti (${percentualePresenti(stat)}%) · `}
           {stat.volteProvata === 0
-            ? 'mai provata'
-            : `provata ${stat.volteProvata} ${stat.volteProvata === 1 ? 'volta' : 'volte'}`}
+            ? 'Mai provata'
+            : `Provata ${stat.volteProvata} ${stat.volteProvata === 1 ? 'volta' : 'volte'}`}
         </span>
       </span>
     </button>

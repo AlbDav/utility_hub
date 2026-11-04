@@ -3,7 +3,7 @@ import type { StatScena } from './logic';
 /** Badge dei sostituti: 0 verde, 1–2 ottone, 3 o più rosso. Il numero c'è sempre. */
 export function BadgeSostituti({ stat }: { stat: StatScena }) {
   if (stat.gente.length === 0) {
-    return <span className={`${BASE} border-2 border-base-300 text-neutral`}>nessuno in scena</span>;
+    return <span className={`${BASE} border-2 border-base-300 text-neutral`}>Nessuno in scena</span>;
   }
   const colore =
     stat.sostituti === 0

@@ -34,12 +34,12 @@ export function PanoramicaView({ data, onApriScena }: Props) {
         <div className="flex flex-col gap-1.5 bg-primary p-4 text-primary-content">
           <span className="display text-[44px] leading-[0.9]">{giorni === null ? '—' : Math.max(0, giorni)}</span>
           <span className="font-mono text-xs font-medium tracking-[0.08em] uppercase">
-            {giorni === null ? 'data della prima da impostare' : etichettaConto(giorni)}
+            {giorni === null ? 'Data della prima da impostare' : etichettaConto(giorni)}
           </span>
         </div>
         <div className="flex flex-col gap-1.5 border-l-2 border-base-content p-4">
           <span className="display text-[44px] leading-[0.9]">{maiProvate}</span>
-          <span className="etichetta">{maiProvate === 1 ? 'scena mai provata' : 'scene mai provate'}</span>
+          <span className="etichetta">{maiProvate === 1 ? 'Scena mai provata' : 'Scene mai provate'}</span>
         </div>
       </section>
 
@@ -63,7 +63,7 @@ export function PanoramicaView({ data, onApriScena }: Props) {
                     {s.scena.numero}
                   </span>
                   <span className="font-mono text-[11px] font-semibold">
-                    {s.volteProvata === 0 ? 'mai' : `×${s.volteProvata}`}
+                    {s.volteProvata === 0 ? 'Mai' : `×${s.volteProvata}`}
                   </span>
                 </button>
               </li>

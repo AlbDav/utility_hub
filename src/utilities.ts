@@ -24,7 +24,7 @@ export const utilities: Utility[] = [
     nome: 'Musical',
     descrizione: 'Planner prove · Aggiungi un posto a tavola',
     sottotitolo: `Aggiungi un posto a tavola${dataPrima ? ` · prima ${conArticolo(dataPrima)}` : ''}`,
-    icona: 'sipario',
+    icona: 'riflettore',
     scadenza: dataPrima ? { data: dataPrima, etichetta: 'alla prima' } : undefined,
   },
 ];
