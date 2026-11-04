@@ -48,32 +48,54 @@ export function statScena(data: MusicalData, scena: Scene, presenti: ReadonlySet
   };
 }
 
-/**
- * Confronta la percentuale di presenti tra la gente in scena, più alta prima.
- * Le scene senza nessuno in scena non hanno una percentuale e vanno in fondo.
- */
-function confrontaPercentuale(a: StatScena, b: StatScena): number {
-  const [na, nb] = [a.gente.length, b.gente.length];
-  if (na === 0 || nb === 0) return (na === 0 ? 1 : 0) - (nb === 0 ? 1 : 0);
-  // b.presenti / nb - a.presenti / na, senza divisioni.
-  return b.presenti * na - a.presenti * nb;
-}
-
 /** Percentuale di presenti tra la gente in scena (0–100), null se la scena è vuota. */
 export function percentualePresenti(stat: StatScena): number | null {
   return stat.gente.length ? Math.round((stat.presenti / stat.gente.length) * 100) : null;
 }
 
 /**
- * Ordine delle scene da provare:
- * 1. percentuale di presenti più alta; 2. meno sostituti; 3. meno volte provata;
- * 4. provata meno di recente (mai provata prima); 5. numero di scena.
+ * Esponente della quota di presenti nel punteggio. Con 2 un'assenza pesa più
+ * di una prova in meno; portarlo a 3 fa pesare ancora di più le assenze.
+ */
+export const ESPONENTE_PRESENTI = 2;
+
+/**
+ * Punteggio di una scena: p^ESPONENTE_PRESENTI / (1 + v), con p = presenti / gente
+ * in scena e v = volte provata. null se in scena non c'è nessuno.
+ * Serve per mostrarlo o per i test: l'ordine usa il confronto esatto qui sotto.
+ */
+export function punteggio(stat: StatScena): number | null {
+  if (stat.gente.length === 0) return null;
+  return (stat.presenti / stat.gente.length) ** ESPONENTE_PRESENTI / (1 + stat.volteProvata);
+}
+
+/**
+ * Confronta i punteggi, più alto prima, senza decimali: il punteggio è
+ * presenti^E / (gente^E · (1 + v)), quindi si confrontano i prodotti incrociati
+ * tra interi e due scene con lo stesso punteggio risultano alla pari.
+ */
+function confrontaPunteggio(a: StatScena, b: StatScena): number {
+  const E = ESPONENTE_PRESENTI;
+  const numA = a.presenti ** E * (b.gente.length ** E * (1 + b.volteProvata));
+  const numB = b.presenti ** E * (a.gente.length ** E * (1 + a.volteProvata));
+  return numB - numA;
+}
+
+/**
+ * Ordine delle scene da provare. Le scene senza nessuno in scena vanno in fondo,
+ * in ordine di numero. Le altre:
+ * 1. punteggio p² / (1 + v) più alto (vedi `punteggio`);
+ * 2. più gente in scena;
+ * 3. provata meno di recente (mai provata, o senza date leggibili, prima);
+ * 4. numero di scena.
  */
 export function confrontaScene(a: StatScena, b: StatScena): number {
+  const vuotaA = a.gente.length === 0;
+  const vuotaB = b.gente.length === 0;
+  if (vuotaA || vuotaB) return Number(vuotaA) - Number(vuotaB) || a.scena.numero - b.scena.numero;
   return (
-    confrontaPercentuale(a, b) ||
-    a.sostituti - b.sostituti ||
-    a.volteProvata - b.volteProvata ||
+    confrontaPunteggio(a, b) ||
+    b.gente.length - a.gente.length ||
     (a.ultimaProva?.getTime() ?? -Infinity) - (b.ultimaProva?.getTime() ?? -Infinity) ||
     a.scena.numero - b.scena.numero
   );
