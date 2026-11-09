@@ -25,21 +25,21 @@ interface Props {
 }
 
 export function CardObiettivo({ testo, posizione, percentuale, attivo, futuro, onPercentuale }: Props) {
-  const trascinamento = useTrascinamento(attivo, onPercentuale);
+  const trascinamento = useTrascinamento<HTMLLIElement>(attivo, onPercentuale);
   const rilievo = RILIEVO[Math.min(posizione, RILIEVO.length - 1)];
   const fatto = percentuale === 100;
   const inchiostro = fatto ? 'text-base-100' : 'text-base-content';
 
   return (
     <li
-      className={`relative flex touch-pan-y flex-col justify-center overflow-hidden rounded-box border-2 bg-base-100 select-none ${
+      ref={trascinamento}
+      className={`relative flex flex-col justify-center overflow-hidden rounded-box border-2 bg-base-100 select-none ${
         rilievo.card
       } ${
         attivo
           ? 'cursor-ew-resize border-base-content shadow-[3px_3px_0_var(--color-base-content)]'
           : 'border-neutral'
       }`}
-      {...trascinamento}
     >
       <Riempimento percentuale={percentuale} />
       <div className={`relative flex items-center gap-3.5 pr-3.5 pl-4 ${rilievo.riga}`}>

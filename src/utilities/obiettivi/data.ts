@@ -12,7 +12,7 @@
  * delle intestazioni in giù. Così la griglia si può spostare nel foglio senza
  * che l'app smetta di leggerla.
  */
-import { nomiGiorni } from '../../lib/dates';
+import { giorniTra, nomiGiorni } from '../../lib/dates';
 import { parseDate, type Table, type Tables } from '../../lib/sheets';
 import type { ObiettiviSheet } from './config';
 
@@ -61,7 +61,28 @@ function trovaColonna(intestazioni: string[], etichetta: string): number {
   return intestazioni.findIndex((c) => normalizza(c) === etichetta);
 }
 
-export function buildSettimana(tables: Tables<ObiettiviSheet>): Settimana {
+/**
+ * La data del foglio. Oltre a gg/mm/aaaa accetta gg/mm senza anno, come si
+ * scrive a mano: l'anno è quello che porta la data più vicina a `oggi`, così
+ * un «30/12» scritto a gennaio resta dell'anno scorso.
+ */
+export function leggiData(testo: string, oggi: Date): Date | null {
+  const intera = parseDate(testo);
+  if (intera) return intera;
+  const senzaAnno = /^(\d{1,2})\/(\d{1,2})$/.exec(testo.trim());
+  if (!senzaAnno) return null;
+  const [giorno, mese] = [Number(senzaAnno[1]), Number(senzaAnno[2])];
+  let migliore: Date | null = null;
+  for (const anno of [oggi.getFullYear() - 1, oggi.getFullYear(), oggi.getFullYear() + 1]) {
+    const candidata = parseDate(`${giorno}/${mese}/${anno}`);
+    if (candidata && (!migliore || Math.abs(giorniTra(oggi, candidata)) < Math.abs(giorniTra(oggi, migliore)))) {
+      migliore = candidata;
+    }
+  }
+  return migliore;
+}
+
+export function buildSettimana(tables: Tables<ObiettiviSheet>, oggi: Date = new Date()): Settimana {
   const avvisi: string[] = [];
   const cells = (tables.settimana as Table).cells;
 
@@ -105,9 +126,9 @@ export function buildSettimana(tables: Tables<ObiettiviSheet>): Settimana {
   if (colonnaData === -1) avvisi.push('Nel foglio manca la colonna «data» con il lunedì di inizio.');
 
   const testoData = cella(cells, primaRiga, colonnaData);
-  const lunedi = parseDate(testoData);
+  const lunedi = leggiData(testoData, oggi);
   if (colonnaData !== -1 && testoData !== '' && lunedi === null) {
-    avvisi.push(`La data di inizio «${testoData}» non si riesce a leggere (scrivila come gg/mm/aaaa).`);
+    avvisi.push(`La data di inizio «${testoData}» non si riesce a leggere (scrivila come gg/mm o gg/mm/aaaa).`);
   }
 
   return { lunedi, obiettivo: cella(cells, primaRiga, colonnaObiettivo), giorni, avvisi };

@@ -1,7 +1,6 @@
 /** Pezzi condivisi fra la card della settimana e quelle del giorno. */
 import { Icon } from '../../components/Icon';
 import { PASSO } from './progresso';
-import { fermaTrascinamento } from './useTrascinamento';
 
 /** Sfondo pieno fino alla percentuale: ottone mentre si avanza, bosco a finito. */
 export function Riempimento({ percentuale }: { percentuale: number }) {
@@ -35,8 +34,6 @@ export function PulsanteSpunta({ fatto, attivo, etichetta, onClick }: SpuntaProp
       disabled={!attivo}
       aria-pressed={fatto}
       aria-label={etichetta}
-      // Il tocco sul quadrato non deve diventare un trascinamento della card.
-      onPointerDown={fermaTrascinamento}
       onClick={onClick}
     >
       <Icon name="spunta" size={24} strokeWidth={2.5} />
