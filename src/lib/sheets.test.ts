@@ -11,6 +11,10 @@ import {
 } from './sheets';
 
 describe('publishedCsvUrl', () => {
+  it('senza gid chiede la prima scheda', () => {
+    expect(publishedCsvUrl('2PACX-abc')).toBe('https://docs.google.com/spreadsheets/d/e/2PACX-abc/pub?output=csv');
+  });
+
   it('costruisce la URL di «Pubblica sul web» per gid', () => {
     expect(publishedCsvUrl('2PACX-abc', '123')).toBe(
       'https://docs.google.com/spreadsheets/d/e/2PACX-abc/pub?gid=123&single=true&output=csv',
@@ -74,7 +78,8 @@ function memoryStorage(): Storage {
 }
 
 describe('copia salvata', () => {
-  const snapshot = { tables: { a: { headers: ['x'], rows: [{ x: '1' }] } }, fetchedAt: '2026-11-04T20:30:00.000Z' };
+  const tabella = { headers: ['x'], rows: [{ x: '1' }], cells: [['x'], ['1']] };
+  const snapshot = { tables: { a: tabella }, fetchedAt: '2026-11-04T20:30:00.000Z' };
 
   it('salva e rilegge la copia', () => {
     const storage = memoryStorage();

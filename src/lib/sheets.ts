@@ -14,6 +14,13 @@ export interface Table {
   /** Intestazioni della prima riga, già ripulite dagli spazi. */
   headers: string[];
   rows: Record<string, string>[];
+  /**
+   * La scheda come griglia, intestazioni comprese: `cells[riga][colonna]`.
+   * Nessuna riga e nessuna colonna viene saltata, così le posizioni
+   * corrispondono a quelle del foglio. Serve alle utility che leggono per
+   * posizione invece che per intestazione.
+   */
+  cells: string[][];
 }
 
 export type Tables<K extends string> = Record<K, Table>;
@@ -26,9 +33,11 @@ export interface Snapshot<K extends string> {
 
 export const FETCH_TIMEOUT_MS = 8000;
 
-export function publishedCsvUrl(publicationId: string, gid: string): string {
+/** Senza `gid` Google serve la prima scheda del foglio pubblicato. */
+export function publishedCsvUrl(publicationId: string, gid?: string): string {
   const id = encodeURIComponent(publicationId);
-  return `https://docs.google.com/spreadsheets/d/e/${id}/pub?gid=${encodeURIComponent(gid)}&single=true&output=csv`;
+  const base = `https://docs.google.com/spreadsheets/d/e/${id}/pub`;
+  return gid ? `${base}?gid=${encodeURIComponent(gid)}&single=true&output=csv` : `${base}?output=csv`;
 }
 
 export function parseCsv(text: string): Table {
@@ -44,7 +53,19 @@ export function parseCsv(text: string): Table {
     for (const h of headers) clean[h] = row[h] ?? '';
     return clean;
   });
-  return { headers, rows };
+  return { headers, rows, cells: parseCells(text) };
+}
+
+/**
+ * La stessa scheda letta come griglia. Qui le righe vuote si tengono: in un
+ * foglio a griglia saltarle sposterebbe tutto quello che viene dopo. Si
+ * tolgono solo quelle in fondo, che sono l'a capo finale del CSV.
+ */
+function parseCells(text: string): string[][] {
+  const result = Papa.parse<string[]>(text, { header: false, skipEmptyLines: false });
+  const cells = result.data.map((row) => row.map((value) => (value ?? '').trim()));
+  while (cells.length > 0 && cells[cells.length - 1].every((value) => value === '')) cells.pop();
+  return cells;
 }
 
 /** Una cella vale «sì» se non è vuota dopo il trim, qualunque cosa contenga. */
