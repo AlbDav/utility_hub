@@ -46,6 +46,8 @@
   --font-sans: "Instrument Sans Variable", system-ui, sans-serif;
   --font-display: "Archivo Variable", "Arial Black", sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  /* Verde chiaro: la barra di un giorno finito, sul fondo scuro del giorno scelto. */
+  --color-bosco-chiaro: #5FA383;
   /* Scala «provata» della panoramica, dalla meno alla più provata. */
   --color-provata-1: #F6DFC4;
   --color-provata-2: #EDBB8A;

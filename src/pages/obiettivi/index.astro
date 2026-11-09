@@ -1,0 +1,17 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import IntestazioneSettimana from '../../utilities/obiettivi/IntestazioneSettimana';
+import Obiettivi from '../../utilities/obiettivi/Obiettivi';
+import { trovaUtility } from '../../utilities';
+
+const utility = trovaUtility('obiettivi');
+---
+
+<Layout title={utility.nome} subtitle={utility.sottotitolo}>
+  <IntestazioneSettimana slot="header" client:only="react">
+    <p slot="fallback" class="etichetta">Settimana in corso</p>
+  </IntestazioneSettimana>
+  <Obiettivi client:only="react">
+    <p slot="fallback" class="text-neutral">Caricamento…</p>
+  </Obiettivi>
+</Layout>

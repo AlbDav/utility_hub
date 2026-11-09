@@ -27,6 +27,13 @@ export const utilities: Utility[] = [
     icona: 'riflettore',
     scadenza: dataPrima ? { data: dataPrima, etichetta: 'alla prima' } : undefined,
   },
+  {
+    slug: 'obiettivi',
+    nome: 'Obiettivi',
+    descrizione: 'Quello della settimana e i tre di oggi',
+    sottotitolo: 'Dal foglio della settimana, spunte su questo telefono',
+    icona: 'obiettivo',
+  },
 ];
 
 export function percorso(utility: Utility): string {
