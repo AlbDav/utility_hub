@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseCsv } from '../../lib/sheets';
-import { buildSettimana } from './data';
+import { buildSettimana, leggiData } from './data';
 
 const foglio = (csv: string) => buildSettimana({ settimana: parseCsv(csv) });
 
@@ -53,7 +53,7 @@ Tre,,,,,,,,,
     const settimana = foglio(GRIGLIA.replace('09/11/2026', 'lunedì prossimo'));
     expect(settimana.lunedi).toBeNull();
     expect(settimana.avvisi).toEqual([
-      'La data di inizio «lunedì prossimo» non si riesce a leggere (scrivila come gg/mm/aaaa).',
+      'La data di inizio «lunedì prossimo» non si riesce a leggere (scrivila come gg/mm o gg/mm/aaaa).',
     ]);
   });
 
@@ -78,5 +78,32 @@ Uno,Due,Tre,Quattro,Cinque,Sette,,Obiettivo,09/11/2026
     expect(settimana.giorni).toEqual([[], [], [], [], [], [], []]);
     expect(settimana.obiettivo).toBe('');
     expect(settimana.avvisi).toHaveLength(1);
+  });
+});
+
+describe('data di inizio', () => {
+  const oggi = new Date(2026, 10, 9);
+
+  it('legge gg/mm/aaaa e gg/mm', () => {
+    expect(leggiData('09/11/2026', oggi)).toEqual(new Date(2026, 10, 9));
+    expect(leggiData('9/11', oggi)).toEqual(new Date(2026, 10, 9));
+  });
+
+  it('senza anno sceglie quello più vicino a oggi', () => {
+    expect(leggiData('29/12', new Date(2027, 0, 2))).toEqual(new Date(2026, 11, 29));
+    expect(leggiData('4/1', new Date(2026, 11, 28))).toEqual(new Date(2027, 0, 4));
+  });
+
+  it('rifiuta quello che non è una data', () => {
+    expect(leggiData('31/02', oggi)).toBeNull();
+    expect(leggiData('lunedì', oggi)).toBeNull();
+    expect(leggiData('', oggi)).toBeNull();
+  });
+
+  it('il foglio con «9/11» è letto senza avvisi', () => {
+    const csv = GRIGLIA.replace('09/11/2026', '9/11');
+    const settimana = buildSettimana({ settimana: parseCsv(csv) }, oggi);
+    expect(settimana.lunedi).toEqual(new Date(2026, 10, 9));
+    expect(settimana.avvisi).toEqual([]);
   });
 });

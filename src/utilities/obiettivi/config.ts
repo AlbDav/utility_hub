@@ -8,15 +8,14 @@ const env = import.meta.env;
 const publicationId = env.PUBLIC_OBIETTIVI_SHEET_ID;
 const gid = env.PUBLIC_OBIETTIVI_GID_SETTIMANA;
 
+// Senza l'ID la build si ferma, invece di pubblicare una pagina che non legge niente.
+if (!publicationId) {
+  throw new Error('PUBLIC_OBIETTIVI_SHEET_ID non è impostata: serve l’ID del foglio pubblicato (vedi .env.example).');
+}
+
 // Il gid è facoltativo: senza, si legge la prima scheda del foglio pubblicato.
-const configured = Boolean(publicationId);
-
-/** Fixture se richieste con PUBLIC_OBIETTIVI_USE_FIXTURES=true o se manca l'ID del foglio. */
-export const useFixtures = env.PUBLIC_OBIETTIVI_USE_FIXTURES === 'true' || !configured;
-
 export const sheetUrls: Record<ObiettiviSheet, string> = {
-  settimana: useFixtures ? '/fixtures/obiettivi/settimana.csv' : publishedCsvUrl(publicationId!, gid || undefined),
+  settimana: publishedCsvUrl(publicationId, gid || undefined),
 };
 
-/** Chiave della copia salvata: cambia tra fixture e foglio vero, così non si mescolano. */
-export const storageKey = `hub:obiettivi:sheets:v1:${useFixtures ? 'fixtures' : 'live'}`;
+export const storageKey = 'hub:obiettivi:sheets:v1';

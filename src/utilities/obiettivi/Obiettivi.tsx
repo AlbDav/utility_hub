@@ -6,7 +6,7 @@ import { usePersistentState } from '../../lib/usePersistentState';
 import { useSheets } from '../../lib/useSheets';
 import { CardObiettivo } from './CardObiettivo';
 import { CardSettimana } from './CardSettimana';
-import { sheetUrls, storageKey, useFixtures } from './config';
+import { sheetUrls, storageKey } from './config';
 import { buildSettimana } from './data';
 import {
   conPercentualeGiorno,
@@ -171,7 +171,7 @@ export default function Obiettivi() {
       )}
 
       <div className="flex flex-col gap-2 border-t-2 border-base-300 pt-4">
-        <DataStatus status={status} onRefresh={refresh} warnings={settimana?.avvisi} fixtures={useFixtures} />
+        <DataStatus status={status} onRefresh={refresh} warnings={settimana?.avvisi} />
         <p className="flex items-center gap-2 px-1 text-sm text-neutral">
           <Icon name="telefono" size={16} className="flex-none" />
           Le spunte restano su questo telefono: nel foglio non tornano.

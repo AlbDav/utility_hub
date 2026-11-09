@@ -18,7 +18,7 @@ interface Props {
  * a tutto il resto e non deve passare inosservato fra i giornalieri.
  */
 export function CardSettimana({ obiettivo, percentuale, attivo, giorno, media, onPercentuale }: Props) {
-  const trascinamento = useTrascinamento(attivo && obiettivo !== '', onPercentuale);
+  const trascinamento = useTrascinamento<HTMLDivElement>(attivo && obiettivo !== '', onPercentuale);
   const fatto = percentuale === 100;
 
   return (
@@ -36,7 +36,7 @@ export function CardSettimana({ obiettivo, percentuale, attivo, giorno, media, o
           Nel foglio l’obiettivo di questa settimana non c’è ancora.
         </p>
       ) : (
-        <div className={`relative touch-pan-y select-none ${attivo ? 'cursor-ew-resize' : ''}`} {...trascinamento}>
+        <div ref={trascinamento} className={`relative select-none ${attivo ? 'cursor-ew-resize' : ''}`}>
           <Riempimento percentuale={percentuale} />
           <div className="relative flex items-center gap-4 py-[22px] pr-4 pl-5">
             <p
